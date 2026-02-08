@@ -2,7 +2,7 @@
 # PROJECT NAME
 # Group information
 * Student 1. Name and email
-* Student 2. Name and email
+* [Olli Puhakka](mailto:opuhakka@student.oulu.fi)
 * Student 3. Name and email
 * Student 4. Name and email
 
