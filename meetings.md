@@ -1,12 +1,15 @@
 # Meetings minutes
 
 ## Meeting 1.
-* **DATE:**
-* **PARTICIPANTS:**
-* **TEACHER:**
+* **DATE:** 5.2.2026
+* **PARTICIPANTS:** Miro, Olli, Nadira, Jeremias
+* **TEACHER:** Iván
 
 ### Action points
 *List here the actions points discussed with assistants*
+- The group should design the API to be part of larger system, e.g. service which
+  utilizes both the API and Google Maps. System like "Client + API + Price Update Worker"
+  is not enough.
 
 ### Notes
 *Add here notes that you consider important. This is not mandatory*
