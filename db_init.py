@@ -9,7 +9,7 @@ db = SQLAlchemy(app)
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
     product = db.Column(db.String(128), nullable=False)
     url = db.Column(db.String(512), nullable=False)
     notes = db.Column(db.String(512), nullable=True)
@@ -20,7 +20,7 @@ class Product(db.Model):
 
 class Price(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey("product.id"))
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id", ondelete="CASCADE"))
     price = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
 
