@@ -1,0 +1,36 @@
+[project]
+name = "pricetracker"
+version = "2026.0.0-dev"
+dependencies = [
+  "Flask>3",
+  "Flask-SQLAlchemy>3",
+]
+requires-python = ">=3.12"
+authors = [
+  {name = "Miro Kakkonen"},
+  {name = "Olli Puhakka"},
+  {name = "Nadira Tasnim"},
+  {name = "Jeremias Nevalainen"}
+]
+description = "Price tracker API"
+readme = "README.md"
+license = "GPL-3.0"
+license-files = ["LICENSE"]
+
+[tool.setuptools]
+packages = ["pricetracker"]
+
+[dependency-groups]
+dev = [
+  {include-group = "lint"},
+  {include-group = "test"}
+  
+]
+
+lint = [
+  "pylint"
+]
+
+test = [
+  "pytest"
+]
