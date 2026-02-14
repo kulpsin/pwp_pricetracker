@@ -3,10 +3,9 @@
 Miscellanious utils
 """
 
-# https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#foreign-key-support
 def set_sqlite_pragma(dbapi_connection):
     """Enables Foreign Key support"""
-
+    # Source: https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#foreign-key-support
     # the sqlite3 driver will not set PRAGMA foreign_keys
     # if autocommit=False; set to True temporarily
     ac = dbapi_connection.autocommit

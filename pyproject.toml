@@ -12,7 +12,7 @@ authors = [
   {name = "Nadira Tasnim"},
   {name = "Jeremias Nevalainen"}
 ]
-description = "Price tracker API"
+description = "Universal Price tracker API"
 readme = "README.md"
 license = "GPL-3.0"
 license-files = ["LICENSE"]

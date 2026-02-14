@@ -11,6 +11,10 @@ from flask import Flask
 from . import utils
 
 
+# Used https://flask.palletsprojects.com/en/stable/tutorial/factory/#the-application-factory
+# and
+# https://github.com/UniOulu-Ubicomp-Programming-Courses/pwp-sensorhub-example/blob/ex2-project-layout/sensorhub/__init__.py
+# as base.
 def create_app(test_config: dict|None=None) -> Flask:
     """
     Create and configure the application

@@ -1,6 +1,10 @@
 #/usr/bin/env python3
 """
 Collection of Database testing scripts using pytest
+
+Used
+https://github.com/UniOulu-Ubicomp-Programming-Courses/pwp-sensorhub-example/blob/ex2-project-layout/tests/test_db.py
+as template for this file.
 """
 
 import os

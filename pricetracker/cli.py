@@ -12,6 +12,7 @@ from .db import db
 from .models import User, Product, Price
 
 
+# https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/flask-api-project-layout/
 @click.command("init-db")
 @with_appcontext
 def init_db_command() -> None:
