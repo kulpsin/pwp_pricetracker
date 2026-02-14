@@ -11,3 +11,5 @@ build
 dist
 instance
 pricetracker.egg-info
+.coverage
+

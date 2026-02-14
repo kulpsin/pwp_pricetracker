@@ -22,6 +22,9 @@ packages = ["pricetracker"]
 
 [project.optional-dependencies]
 lint = ["pylint"]
-test = ["pytest"]
+test = [
+  "pytest",
+  "pytest-cov"
+]
 dev = ["pricetracker[lint,test]"]
 
