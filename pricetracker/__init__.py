@@ -1,13 +1,26 @@
 #!/usr/bin/env python3
+"""
+Price Tracker is an Flask API application which
+allows users to add tracking requests and workers can
+add product price information to tracked products.
+"""
 import os
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+
+from . import utils
 
 
-db = SQLAlchemy()
+def create_app(test_config: dict|None=None) -> Flask:
+    """
+    Create and configure the application
 
-def create_app(test_config=None):
+    :param test_config: Configuration to be used. If not provided,
+        'config.py' is loaded instead and if that does not exist,
+        use defaults.
+    :return: Flask application instance
+    :rtype: Flask
+    """
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
@@ -31,12 +44,16 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
+    # pylint: disable=C0415 (wrong-import-position)
     from . import api
     app.register_blueprint(api.api_bp, url_prefix='/api')
 
+    # pylint: disable=C0415 (wrong-import-position)
+    from .db import db
     db.init_app(app)
-    from . import models
-    app.cli.add_command(models.init_db_command)
-    app.cli.add_command(models.generate_test_data)
+    # pylint: disable=C0415 (wrong-import-position)
+    from . import cli
+    app.cli.add_command(cli.init_db_command)
+    app.cli.add_command(cli.generate_test_data)
+    app.cli.add_command(cli.remove_test_data)
     return app
-
