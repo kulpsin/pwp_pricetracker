@@ -44,9 +44,9 @@ flask --app pricetracker run --debug
 curl 'http://127.0.0.1:5000/hello'
 ```
 
-## Automated testing
+## Testing
 
-You can run automated tests by running following commands in root directory.
+You can run tests by running following commands in root directory.
 ```shell
 # pytest: runs tests/test*.py files
 pytest .
