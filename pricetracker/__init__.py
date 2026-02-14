@@ -31,6 +31,9 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
+    from . import api
+    app.register_blueprint(api.api_bp, url_prefix='/api')
+
     db.init_app(app)
     from . import models
     app.cli.add_command(models.init_db_command)

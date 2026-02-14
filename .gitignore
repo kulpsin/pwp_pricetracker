@@ -1,2 +1,13 @@
 
+*.env
+
+# Editors
+**/.*.swp
+
+# Python
+.venv
 **/__pycache__
+build
+dist
+instance
+pricetracker.egg-info
