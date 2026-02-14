@@ -50,6 +50,8 @@ You can run tests by running following commands in root directory.
 ```shell
 # pytest: runs tests/test*.py files
 pytest .
+# pytest-cov
+pytest --cov=.
 
 # pylint: static code analysis.
 pylint .
