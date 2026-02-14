@@ -20,17 +20,8 @@ license-files = ["LICENSE"]
 [tool.setuptools]
 packages = ["pricetracker"]
 
-[dependency-groups]
-dev = [
-  {include-group = "lint"},
-  {include-group = "test"}
-  
-]
+[project.optional-dependencies]
+lint = ["pylint"]
+test = ["pytest"]
+dev = ["pricetracker[lint,test]"]
 
-lint = [
-  "pylint"
-]
-
-test = [
-  "pytest"
-]

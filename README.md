@@ -30,7 +30,7 @@ python3 -m venv .venv
 . .venv/bin/activate
 
 # Install the project in editable/development mode
-pip install -e .
+pip install -e .[dev]
 
 # Initialize database
 flask --app pricetracker init-db
