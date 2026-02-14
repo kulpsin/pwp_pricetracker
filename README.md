@@ -9,7 +9,6 @@
 # Dependencies
 
 - Flask
-- pysqlite3
 - flask-sqlalchemy
 
 All the dependencies can be installed by running `pip install -r requirements.txt`.
@@ -44,6 +43,19 @@ flask --app pricetracker run --debug
 # Test that you can send requests to the server
 curl 'http://127.0.0.1:5000/hello'
 ```
+
+## Automated testing
+
+You can run automated tests by running following commands in root directory.
+```shell
+# pytest: runs tests/test*.py files
+pytest .
+
+# pylint: static code analysis.
+pylint .
+```
+
+Pylint can be configured by modifying [`pylintrc.toml`](pylintrc.toml)-file.
 
 ---
 
