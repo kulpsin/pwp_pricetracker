@@ -28,6 +28,62 @@ class Product(db.Model):
     user = db.relationship("User", back_populates="products")
     prices = db.relationship("Price", back_populates="product")
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "name": self.name,
+            "url": self.url,
+            "notes": self.notes,
+            "active": self.active
+        }
+    
+    
+    def deserialize(self, doc):
+        # Required / Core fields
+        if "name" in doc:
+            self.name = doc["name"]
+        if "url" in doc:
+            self.url = doc["url"]
+        if "user_id" in doc:
+            self.user_id = doc["user_id"]
+        
+        # Optional fields
+        if "notes" in doc:
+            self.notes = doc["notes"]
+        if "active" in doc:
+            # Ensuring we store a boolean
+            self.active = bool(doc["active"])
+    
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["name", "url", "user_id"]
+        }
+        props = schema["properties"] = {}
+        props["name"] = {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+        }
+        props["url"] = {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 512
+        }
+        props["user_id"] = {
+            "type": "integer"
+        }
+        props["notes"] = {
+            "type": ["string", "null"],
+            "maxLength": 512
+        }
+        props["active"] = {
+            "type": "boolean"
+        }
+        return schema
+
 
 class Price(db.Model):
     """Price model"""
