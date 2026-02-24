@@ -29,6 +29,9 @@ class Product(db.Model):
     prices = db.relationship("Price", back_populates="product")
 
     def serialize(self):
+
+        """Convert the object into a serializable dictionary."""
+
         return {
             "id": self.id,
             "user_id": self.user_id,
@@ -37,51 +40,64 @@ class Product(db.Model):
             "notes": self.notes,
             "active": self.active
         }
-    
-    
+
     def deserialize(self, doc):
-        # Required / Core fields
+
+        """Update object attributes from a dictionary of values."""
+
+        # Required fields
+        if "user_id" in doc:
+            self.user_id = int(doc["user_id"]) # Ensure integer
         if "name" in doc:
             self.name = doc["name"]
         if "url" in doc:
             self.url = doc["url"]
-        if "user_id" in doc:
-            self.user_id = doc["user_id"]
-        
+
         # Optional fields
         if "notes" in doc:
             self.notes = doc["notes"]
         if "active" in doc:
-            # Ensuring we store a boolean
-            self.active = bool(doc["active"])
-    
+            self.active = bool(doc["active"]) # Ensure bool
+
     @staticmethod
     def json_schema():
+
+        """Return the JSON schema rules for this object's data."""
+
+        # Required fields
         schema = {
             "type": "object",
-            "required": ["name", "url", "user_id"]
+            "required": ["user_id", "name", "url"]
         }
+
+
         props = schema["properties"] = {}
+
         props["name"] = {
         "type": "string",
         "minLength": 1,
         "maxLength": 128
         }
+
         props["url"] = {
             "type": "string",
             "format": "uri",
             "maxLength": 512
         }
+
         props["user_id"] = {
             "type": "integer"
         }
+
         props["notes"] = {
             "type": ["string", "null"],
             "maxLength": 512
         }
+
         props["active"] = {
             "type": "boolean"
         }
+
         return schema
 
 
