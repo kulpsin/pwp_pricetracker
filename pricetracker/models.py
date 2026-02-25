@@ -162,6 +162,7 @@ class ApiKey(db.Model):
     _key_hash = db.Column("key", db.String(32), nullable=False, unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))  # NULL is ok
     admin =  db.Column(db.Boolean, default=False)
+    worker =  db.Column(db.Boolean, default=False)
     allowed_to_post_prices = db.Column(db.Boolean, default=False)
 
     user = db.relationship("User", back_populates="apikeys")

@@ -12,7 +12,7 @@ from werkzeug.exceptions import Forbidden, Unauthorized
 from .models import ApiKey
 
 
-def require(user=None, resource=None, admin=False):
+def require(user=None, resource=None, admin=False, worker=False):
     def decorator(func):
         def wrapped(*args, **kwargs):
 
@@ -22,10 +22,15 @@ def require(user=None, resource=None, admin=False):
             db_key = ApiKey.query.where(ApiKey.key == key_hash).first()
 
             if admin:
-                # Admin key is required
+                # Admin key is required, skip rest of the rules if success
                 if not db_key.admin:
                     raise Forbidden
-                #return func(*args, **kwargs)  # Skip other rules?
+                return func(*args, **kwargs)
+            if worker:
+                # Worker key is required, skip rest of the rules if success
+                if not db_key.worker:
+                    raise Forbidden
+                return func(*args, **kwargs)
 
             # If the request data contains user_id, we need to check that:
             if 'user_id' in request.json:
