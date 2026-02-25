@@ -121,3 +121,31 @@ class User(db.Model):
     password = db.Column(db.String(128), nullable=False)
 
     products = db.relationship("Product", back_populates="user")
+
+    def serialize(self):
+        return {
+            "id" : self.id,
+            "email" : self.email
+        }
+    
+    def deserialize(self, doc):
+        self.email = doc["email"]
+        self.password = doc["password"]
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type" : "object",
+            "required": ["email", "password"]
+        }
+        props = schema["properties"] = {}
+        props["email"] = {
+            "type": "string",
+            "maxLength": 128
+        }
+        props["password"] = {
+            "type": "string",
+            "maxLength": 128
+        }
+
+        return schema
