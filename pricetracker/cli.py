@@ -42,7 +42,7 @@ def add_admin_user(email: str) -> None:
 @click.argument("email")
 @with_appcontext
 def add_worker_key(email: str) -> None:
-    """Creates an admin user"""
+    """Creates a new worker-apikey for the user"""
     u = User.query.filter_by(
         email=email,
     ).first()
