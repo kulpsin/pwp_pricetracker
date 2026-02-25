@@ -4,6 +4,8 @@ version = "2026.0.0-dev"
 dependencies = [
   "Flask>3",
   "Flask-SQLAlchemy>3",
+  "flask-restful>0.3",
+  "jsonschema>4",
 ]
 requires-python = ">=3.12"
 authors = [

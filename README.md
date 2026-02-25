@@ -1,17 +1,19 @@
 # PWP SPRING 2026
 # PROJECT NAME
 # Group information
-* Student 1. Name and email
+* Miro Kakkonen
 * [Olli Puhakka](mailto:opuhakka@student.oulu.fi)
 * [Nadira Tasnim](mailto:ntasnim25@student.oulu.fi)
-* Student 4. Name and email
+* Jeremias Nevalainen
 
 # Dependencies
 
 - Flask
 - flask-sqlalchemy
+- flask-restful
+- jsonschema
 
-All the dependencies can be installed by running `pip install -r requirements.txt`.
+All the dependencies will be installed when installing the main package by running `pip install .`.
 
 # Database
 
