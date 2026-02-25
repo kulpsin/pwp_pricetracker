@@ -3,12 +3,13 @@
 from flask import Response, request
 from flask_restful import Resource
 from jsonschema import ValidationError, validate
-from werkzeug.exceptions import BadRequest, Conflict
+from werkzeug.exceptions import BadRequest, Conflict, NotFound
+from werkzeug.routing import BaseConverter
 from sqlalchemy.exc import IntegrityError
-
 
 from .. import models
 from ..db import db
+
 
 class ProductCollection(Resource):
 
@@ -27,7 +28,7 @@ class ProductCollection(Resource):
         try:
             validate(request.json, models.Product.json_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         product = models.Product()
         product.deserialize(request.json)
@@ -35,8 +36,8 @@ class ProductCollection(Resource):
         try:
             db.session.add(product)
             db.session.commit()
-        except IntegrityError:
-            raise Conflict(description=f"Product with id '{request.json['id']}' already exists.")
+        except IntegrityError as e:
+            raise Conflict(description=f"Product with id '{request.json['id']}' already exists.") from e
 
         return Response(status=201)
 
@@ -73,14 +74,14 @@ class ProductItem(Resource):
         try:
             validate(request.json, models.Product.json_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         product.deserialize(request.json)
         try:
             db.session.add(product)
             db.session.commit()
-        except IntegrityError:
-            raise Conflict(description=f"Product with id '{request.json['id']}' already exists.")
+        except IntegrityError as e:
+            raise Conflict(description=f"Product with id '{request.json['id']}' already exists.") from e
 
         return Response(status=204)
 
@@ -92,3 +93,14 @@ class ProductItem(Resource):
         db.session.commit()
 
         return Response(status=204)
+
+
+class ProductConverter(BaseConverter):
+    def to_python(self, value):
+        db_product = models.Product.query.filter_by(id=value).first()
+        if db_product is None:
+            raise NotFound
+        return db_product
+
+    def to_url(self, value):
+        return value.id

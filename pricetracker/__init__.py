@@ -8,7 +8,7 @@ import os
 
 from flask import Flask
 
-from . import utils
+import pricetracker.utils as utils
 
 
 # Used https://flask.palletsprojects.com/en/stable/tutorial/factory/#the-application-factory
@@ -58,7 +58,8 @@ def create_app(test_config: dict|None=None) -> Flask:
     app.cli.add_command(cli.remove_test_data)
 
     # Define URL converters
-    app.url_map.converters["product"] = utils.ProductConverter
+    from pricetracker.resources.product import ProductConverter
+    app.url_map.converters["product"] = ProductConverter
 
     # pylint: disable=C0415 (wrong-import-position)
     from . import api
