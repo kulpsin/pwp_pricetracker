@@ -8,23 +8,24 @@ as template for this file.
 """
 
 import os
-import hashlib
 import json
 import tempfile
-from datetime import datetime
 
 import pytest
-from sqlalchemy.engine import Engine
-from sqlalchemy import event
+
 from flask.testing import FlaskClient
 from werkzeug.datastructures import Headers
 
-from pricetracker.models import Product, Price, User
+from pricetracker.models import Product, Price, User, ApiKey
 from pricetracker.db import db
-from pricetracker import create_app, utils
+from pricetracker import create_app
 
 
-TEST_KEY = "verysafetestkey"
+TEST_KEYS = [
+    "verysafetestkey1",
+    "verysafetestkey2",
+    "verysafetestkey3",
+]
 
 
 # https://stackoverflow.com/questions/16416001/set-http-headers-for-all-requests-in-a-flask-test
@@ -32,7 +33,7 @@ class AuthHeaderClient(FlaskClient):
     """Placeholder for authentication testing"""
     def open(self, *args, **kwargs):
         headers = Headers({
-            'X-Api-Key': TEST_KEY
+            'X-Api-Key': TEST_KEYS[0]
         })
         extra_headers = kwargs.pop('headers', Headers())
         headers.extend(extra_headers)
@@ -56,6 +57,7 @@ def fixture_client():
     ctx.push()
     db.create_all()
     _populate_db()
+    app.test_client_class = AuthHeaderClient
     yield app.test_client()
 
     os.close(db_fd)
@@ -66,24 +68,31 @@ def fixture_client():
 
 def _populate_db():
     """Populate the DB with two users and two products for each"""
-    for user_idx in range(1, 3):
+    for user_idx in range(2):
         user = User(
             email=f"test-resource-user-{user_idx}@localhost",
-            password=hashlib.sha256(f"password{user_idx}".encode()).digest()
         )
         db.session.add(user)
-        for product_idx in range(1, 3):
+
+        # Generate unique key for a user
+        key = ApiKey(key=TEST_KEYS[user_idx])
+        key.user = user
+        db.session.add(key)
+
+        for product_idx in range(2):
             product = Product(
                 name=f"user-{user_idx}-product-{product_idx}",
                 url=f"http://localhost/product-{product_idx}",
                 active=True,
             )
+            product.user = user
             db.session.add(product)
+
 
     db.session.commit()
 
 
-def _get_product_dict(user_idx: int=1, product_idx: int=3):
+def _get_product_dict(user_idx: int=1, product_idx: int=0):
     """Creates a valid product dict object to be used for PUT and POST tests."""
     return {
         "user_id": user_idx,
@@ -96,6 +105,8 @@ class TestProductCollection:
     """Group of all product collection related tests"""
 
     RESOURCE_URL = "/api/products/"
+
+
 
     def test_get(self, client):
         """Test that the GET route responds with correct data"""
@@ -132,10 +143,17 @@ class TestProductCollection:
         resp = client.post(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 201
 
+    def test_post_product_as_other(self, client):
+        """X-Api-Key and user_id do not match"""
+        valid = _get_product_dict(user_idx=2)
+        resp = client.post(self.RESOURCE_URL, json=valid)
+        assert resp.status_code == 403
+
+
 class TestProductItem:
     """Group of all product item related tests"""
     RESOURCE_URL = "/api/products/1/"
-    INVALID_RESOURCE_URL = "/api/products/5/"
+    INVALID_RESOURCE_URL = "/api/products/34/"
 
     def test_get(self, client):
         """Test that the GET route responds with correct data"""
@@ -172,6 +190,26 @@ class TestProductItem:
 
     def test_put_name_conflict(self, client):
         """Name conflict is ok"""
-        valid = _get_product_dict(product_idx=2)
+        valid = _get_product_dict(product_idx=1)
         resp = client.put(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 204
+
+    def test_put_product_owned_by_other(self, client):
+        """Name conflict is ok"""
+        user_id = 1
+        # Get a product from different user:
+        resp = client.get(TestProductCollection.RESOURCE_URL)
+        body = resp.json
+        product = None
+        for item in body:
+            if item['user_id'] != user_id:
+                product = item
+                break
+        assert product is not None
+        # Construct url:
+        resource_url = f"{TestProductCollection.RESOURCE_URL}{product['id']}/"
+
+        # Get valid product dict with user's id
+        valid = _get_product_dict(user_idx=user_id)
+        resp = client.put(resource_url, json=valid)
+        assert resp.status_code == 403

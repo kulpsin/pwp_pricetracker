@@ -3,9 +3,12 @@
 Contains definations for all the database data models.
 """
 
+import os
+import hashlib
 import datetime
 
 from sqlalchemy.engine import Engine
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import event
 
 from . import utils
@@ -29,7 +32,7 @@ class Product(db.Model):
     user = db.relationship("User", back_populates="products")
     prices = db.relationship("Price", back_populates="product")
 
-    def serialize(self):
+    def serialize(self) -> dict:
 
         """Convert the object into a serializable dictionary."""
 
@@ -42,7 +45,7 @@ class Product(db.Model):
             "active": self.active
         }
 
-    def deserialize(self, doc):
+    def deserialize(self, doc: dict) -> None:
 
         """Update object attributes from a dictionary of values."""
 
@@ -61,7 +64,7 @@ class Product(db.Model):
             self.active = bool(doc["active"]) # Ensure bool
 
     @staticmethod
-    def json_schema():
+    def json_schema() -> dict:
 
         """Return the JSON schema rules for this object's data."""
 
@@ -148,9 +151,9 @@ class User(db.Model):
     """User model"""
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128), nullable=False, unique=True)
-    password = db.Column(db.String(128), nullable=False)
 
     products = db.relationship("Product", back_populates="user")
+    apikeys = db.relationship("ApiKey", back_populates="user")
 
     def serialize(self):
         return {
@@ -160,23 +163,55 @@ class User(db.Model):
     
     def deserialize(self, doc):
         self.email = doc["email"]
-        self.password = doc["password"]
 
     @staticmethod
     def json_schema():
         schema = {
             "type" : "object",
-            "required": ["email", "password"]
+            "required": ["email", ]
         }
         props = schema["properties"] = {}
         props["email"] = {
             "type": "string",
             "maxLength": 128
         }
-        props["password"] = {
-            "type": "string",
-            "maxLength": 128
-        }
 
         return schema
-        
+
+
+# Source:
+# https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/implementing-rest-apis-with-flask/#implementing-api-key-authentication
+class ApiKey(db.Model):
+    """
+    APiKey model
+
+    User could technically have multiple apikeys at some point.
+
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    _key_hash = db.Column("key", db.String(32), nullable=False, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))  # NULL is ok
+    admin =  db.Column(db.Boolean, default=False)
+    worker =  db.Column(db.Boolean, default=False)
+    allowed_to_post_prices = db.Column(db.Boolean, default=False)
+
+    user = db.relationship("User", back_populates="apikeys")
+
+    @hybrid_property
+    def key(self) -> str:
+        return self._key_hash
+
+    @key.inplace.setter
+    def _key_setter(self, key: str) -> None:
+        """Generates salt for storing the key safely"""
+        self._key_hash = self.key_hash(key)
+
+    @staticmethod
+    def key_hash(key: str) -> str:
+        """Generate hash for a key"""
+        return hashlib.pbkdf2_hmac(
+            'sha256',
+            key.encode(),
+            os.getenv('PEPPER', 'mintIsGood').encode(),
+            102_074,
+        )

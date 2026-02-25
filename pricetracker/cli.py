@@ -3,13 +3,64 @@
 CLI tools for Price Tracker
 """
 
-import hashlib
+import datetime
+import random
+import secrets
+
 import click
 from flask.cli import with_appcontext
 from sqlalchemy import exc
 
 from .db import db
-from .models import User, Product, Price
+from .models import User, Product, Price, ApiKey
+
+
+@click.command("add-admin-user")
+@click.argument("email")
+@with_appcontext
+def add_admin_user(email: str) -> None:
+    """Creates an admin user"""
+    u = User(
+        email=email,
+    )
+    db.session.add(u)
+    key = secrets.token_urlsafe(32)
+    a = ApiKey(
+        key=key,
+        admin=True,
+        user=u,
+    )
+    db.session.add(a)
+
+    db.session.commit()
+    print("Admin user has successfully been created, please store following ApiKey securely, "
+          "it cannot be recovered.")
+    print(key)
+
+
+@click.command("add-worker-key")
+@click.argument("email")
+@with_appcontext
+def add_worker_key(email: str) -> None:
+    """Creates a new worker-apikey for the user"""
+    u = User.query.filter_by(
+        email=email,
+    ).first()
+    if not u:
+        print("User does not exist")
+        return
+    key = secrets.token_urlsafe(32)
+    a = ApiKey(
+        key=key,
+        worker=True,
+        user=u,
+    )
+    db.session.add(a)
+
+    db.session.commit()
+    print(f"A worker key has been created for user '{email}'. Please store the ApiKey securely, "
+          "it cannot be recovered.")
+    print(key)
 
 
 # https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/flask-api-project-layout/
@@ -36,14 +87,9 @@ def remove_test_data() -> None:
 @with_appcontext
 def generate_test_data() -> None:
     """Generates testdata under email 'test-user-1@localhost'"""
-    # pylint: disable=C0415 (wrong-import-position)
-    import datetime
-    # pylint: disable=C0415 (wrong-import-position)
-    import random
 
     u = User(
         email="test-user-1@localhost",
-        password=hashlib.sha256("password".encode()).digest()
     )
     db.session.add(u)
 

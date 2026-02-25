@@ -4,7 +4,6 @@ Miscellanious utils and URL converters
 """
 
 
-
 def set_sqlite_pragma(dbapi_connection):
     """Enables Foreign Key support"""
     # Source: https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#foreign-key-support
@@ -19,4 +18,3 @@ def set_sqlite_pragma(dbapi_connection):
 
     # restore previous autocommit setting
     dbapi_connection.autocommit = ac
-
