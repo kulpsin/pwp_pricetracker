@@ -82,7 +82,7 @@ class ProductItem(Resource):
             db.session.add(product)
             db.session.commit()
         except IntegrityError as e:
-            raise Conflict(description=f"Oops...Something went wrong.") from e
+            raise Conflict(description="Oops...Something went wrong.") from e
 
         return Response(status=204)
     @auth.require()

@@ -3,7 +3,8 @@
 CLI tools for Price Tracker
 """
 
-import hashlib
+import datetime
+import random
 import secrets
 
 import click
@@ -31,7 +32,8 @@ def add_admin_user(email: str) -> None:
     db.session.add(a)
 
     db.session.commit()
-    print("Admin user has successfully been created, please store following ApiKey securely, it cannot be recovered.")
+    print("Admin user has successfully been created, please store following ApiKey securely, "
+          "it cannot be recovered.")
     print(key)
 
 
@@ -59,14 +61,9 @@ def remove_test_data() -> None:
 @with_appcontext
 def generate_test_data() -> None:
     """Generates testdata under email 'test-user-1@localhost'"""
-    # pylint: disable=C0415 (wrong-import-position)
-    import datetime
-    # pylint: disable=C0415 (wrong-import-position)
-    import random
 
     u = User(
         email="test-user-1@localhost",
-        password=hashlib.sha256("password".encode()).digest()
     )
     db.session.add(u)
 

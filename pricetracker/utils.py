@@ -18,4 +18,3 @@ def set_sqlite_pragma(dbapi_connection):
 
     # restore previous autocommit setting
     dbapi_connection.autocommit = ac
-

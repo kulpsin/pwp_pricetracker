@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 
 from .. import models
 from ..db import db
+from .. import auth
 
 class UserCollection(Resource):
 
@@ -61,9 +62,9 @@ class UserItem(Resource):
             raise Conflict(description="Email already exists.")
         return Response(status=204)
 
+    @auth.require()
     def delete(self, user):
         db.session.delete(user)
         db.session.commit()
 
         return Response(status=204)
-    

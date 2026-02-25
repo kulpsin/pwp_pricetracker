@@ -71,7 +71,6 @@ def _populate_db():
     for user_idx in range(2):
         user = User(
             email=f"test-resource-user-{user_idx}@localhost",
-            #password=hashlib.sha256(f"password{user_idx}".encode()).digest()
         )
         db.session.add(user)
 
