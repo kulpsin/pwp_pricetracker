@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
-Miscellanious utils
+Miscellanious utils and URL converters
 """
+
+from werkzeug.routing import BaseConverter
+from werkzeug.exceptions import NotFound
+
+from .models import Product
 
 def set_sqlite_pragma(dbapi_connection):
     """Enables Foreign Key support"""
@@ -17,3 +22,14 @@ def set_sqlite_pragma(dbapi_connection):
 
     # restore previous autocommit setting
     dbapi_connection.autocommit = ac
+
+
+class ProductConverter(BaseConverter):
+    def to_python(self, value):
+        db_product = Product.query.filter_by(id=value).first()
+        if db_product is None:
+            raise NotFound
+        return db_product
+
+    def to_url(self, value):
+        return value.id

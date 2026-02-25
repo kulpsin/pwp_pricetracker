@@ -10,8 +10,8 @@ from .resources.product import ProductCollection, ProductItem
 api_bp =  Blueprint("api", __name__)
 api = Api(api_bp)
 
-api.add_resource(ProductCollection, "/product")
-api.add_resource(ProductItem, "/product/<int:product_id>")
+api.add_resource(ProductCollection, "/products/")
+api.add_resource(ProductItem, "/products/<product:product>/")
 
 @api_bp.route('/hello')
 def hello():

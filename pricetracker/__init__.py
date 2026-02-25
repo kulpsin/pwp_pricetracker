@@ -49,10 +49,6 @@ def create_app(test_config: dict|None=None) -> Flask:
         return 'Hello, World!'
 
     # pylint: disable=C0415 (wrong-import-position)
-    from . import api
-    app.register_blueprint(api.api_bp, url_prefix='/api')
-
-    # pylint: disable=C0415 (wrong-import-position)
     from .db import db
     db.init_app(app)
     # pylint: disable=C0415 (wrong-import-position)
@@ -60,4 +56,12 @@ def create_app(test_config: dict|None=None) -> Flask:
     app.cli.add_command(cli.init_db_command)
     app.cli.add_command(cli.generate_test_data)
     app.cli.add_command(cli.remove_test_data)
+
+    # Define URL converters
+    app.url_map.converters["product"] = utils.ProductConverter
+
+    # pylint: disable=C0415 (wrong-import-position)
+    from . import api
+    app.register_blueprint(api.api_bp, url_prefix='/api')
+
     return app
