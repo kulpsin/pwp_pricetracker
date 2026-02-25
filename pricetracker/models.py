@@ -149,3 +149,4 @@ class User(db.Model):
         }
 
         return schema
+        
