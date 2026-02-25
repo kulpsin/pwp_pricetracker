@@ -6,12 +6,15 @@ Flask Blueprints.
 from flask import Blueprint, jsonify
 from flask_restful import Api
 from .resources.product import ProductCollection, ProductItem
+from .resources.price import PriceCollection, PriceItem
 
 api_bp =  Blueprint("api", __name__)
 api = Api(api_bp)
 
 api.add_resource(ProductCollection, "/products/")
 api.add_resource(ProductItem, "/products/<product:product>/")
+api.add_resource(PriceCollection, "/products/<product:product>/prices/")
+api.add_resource(PriceItem, "/products/<product:product>/prices/<price:price>/")
 
 @api_bp.route('/hello')
 def hello():

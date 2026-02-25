@@ -3,6 +3,7 @@
 Contains definations for all the database data models.
 """
 
+import datetime
 
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
@@ -113,6 +114,35 @@ class Price(db.Model):
 
     product = db.relationship("Product", back_populates="prices")
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "product_id": self.product_id,
+            "value": self.value,
+            "timestamp": self.timestamp
+        }
+
+    def deserialize(self, doc):
+        self.value = doc["value"]
+        self.timestamp = datetime.datetime.fromisoformat(doc["timestamp"])
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["value", "timestamp"]
+        }
+
+        props = schema["properties"] = {}
+        
+        props["value"] = {
+            "type": "number"
+        }
+        props["timestamp"] = {
+            "type": "string",
+            "format": "date-time"
+        }
+        return schema
 
 class User(db.Model):
     """User model"""

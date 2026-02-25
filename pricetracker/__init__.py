@@ -60,6 +60,8 @@ def create_app(test_config: dict|None=None) -> Flask:
     # Define URL converters
     from pricetracker.resources.product import ProductConverter
     app.url_map.converters["product"] = ProductConverter
+    from pricetracker.resources.price import PriceConverter
+    app.url_map.converters["price"] = PriceConverter
 
     # pylint: disable=C0415 (wrong-import-position)
     from . import api
