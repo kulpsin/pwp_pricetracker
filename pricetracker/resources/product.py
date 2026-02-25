@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 
 from .. import models
 from ..db import db
-
+from .. import auth
 
 class ProductCollection(Resource):
 
@@ -18,6 +18,7 @@ class ProductCollection(Resource):
     Provides methods to create new products and list all products.
     """
 
+    @auth.require()
     def post(self):
 
         """Create a new product."""
@@ -64,6 +65,7 @@ class ProductItem(Resource):
 
         return product.serialize()
 
+    @auth.require()
     def put(self, product):
 
         """Update an existing product."""
@@ -75,16 +77,15 @@ class ProductItem(Resource):
             validate(request.json, models.Product.json_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e)) from e
-
         product.deserialize(request.json)
         try:
             db.session.add(product)
             db.session.commit()
         except IntegrityError as e:
-            raise Conflict(description=f"Product with id '{request.json['id']}' already exists.") from e
+            raise Conflict(description=f"Oops...Something went wrong.") from e
 
         return Response(status=204)
-
+    @auth.require()
     def delete(self, product):
 
         """Delete a specific product."""

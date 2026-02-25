@@ -58,7 +58,6 @@ def _get_user() -> User:
     """Returns default user"""
     return User(
         email="test-user-1@localhost",
-        password="placeholder",
     )
 
 
