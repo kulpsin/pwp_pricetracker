@@ -4,12 +4,35 @@ CLI tools for Price Tracker
 """
 
 import hashlib
+import secrets
+
 import click
 from flask.cli import with_appcontext
 from sqlalchemy import exc
 
 from .db import db
-from .models import User, Product, Price
+from .models import User, Product, Price, ApiKey
+
+
+@click.command("add-admin-user")
+@click.argument("email")
+@with_appcontext
+def add_admin_user(email: str) -> None:
+    """Creates an admin user"""
+    u = User(
+        email=email,
+    )
+    db.session.add(u)
+    key = secrets.token_urlsafe(32)
+    a = ApiKey(
+        key=key,
+        user=u,
+    )
+    db.session.add(a)
+
+    db.session.commit()
+    print("Admin user has successfully been created, please store following ApiKey securely, it cannot be recovered.")
+    print(key)
 
 
 # https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/flask-api-project-layout/

@@ -56,6 +56,7 @@ def create_app(test_config: dict|None=None) -> Flask:
     app.cli.add_command(cli.init_db_command)
     app.cli.add_command(cli.generate_test_data)
     app.cli.add_command(cli.remove_test_data)
+    app.cli.add_command(cli.add_admin_user)
 
     # Define URL converters
     from pricetracker.resources.product import ProductConverter
