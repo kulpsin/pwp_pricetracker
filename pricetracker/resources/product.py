@@ -38,7 +38,7 @@ class ProductCollection(Resource):
             db.session.add(product)
             db.session.commit()
         except IntegrityError as e:
-            raise Conflict(description=f"Product with id '{request.json['id']}' already exists.") from e
+            raise Conflict(description="Product already exists or violates constraints.") from e
 
         return Response(status=201)
 
@@ -104,4 +104,4 @@ class ProductConverter(BaseConverter):
         return db_product
 
     def to_url(self, value):
-        return value.id
+        return str(value.id)
