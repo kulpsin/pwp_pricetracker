@@ -45,10 +45,21 @@ class ProductCollection(Resource):
         product = models.Product()
         product.deserialize(request.json)
 
+        base_hduir = slugify(product.name)
+        hduir = base_hduir
+        counter = 1
+
+        while models.Product.query.filter_by(hduir=hduir).first():
+            hduir = f"{base_hduir}-{counter}"
+            counter += 1
+        
+        product.hduir = hduir
+
         try:
             db.session.add(product)
             db.session.commit()
         except IntegrityError as e:
+            db.session.rollback()
             raise Conflict(description="Product already exists or violates constraints.") from e
 
         return Response(status=201)
@@ -93,6 +104,7 @@ class ProductItem(Resource):
             db.session.add(product)
             db.session.commit()
         except IntegrityError as e:
+            db.session.rollback()
             raise Conflict(description="Oops...Something went wrong.") from e
 
         return Response(status=204)
@@ -115,4 +127,4 @@ class ProductConverter(BaseConverter):
         return db_product
 
     def to_url(self, value):
-        return f"{slugify(value.name)}-{format(value.id, "x")}"
+        return value.hduir

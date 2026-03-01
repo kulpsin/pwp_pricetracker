@@ -28,6 +28,8 @@ class Product(db.Model):
     url = db.Column(db.String(512), nullable=False)
     notes = db.Column(db.String(512), nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
+    hduir = db.Column(db.String(160), unique=True, index=True, nullable=False)
+
 
     user = db.relationship("User", back_populates="products")
     prices = db.relationship("Price", back_populates="product")
