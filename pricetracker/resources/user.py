@@ -1,6 +1,8 @@
 # This code has the same structure as the Sensorhub example provided in the course material
 # (https://github.com/UniOulu-Ubicomp-Programming-Courses/pwp-sensorhub-example/blob/ex2-05-validation/app.py)
 
+import secrets
+
 from flask import Response, request
 from flask_restful import Resource
 from jsonschema import ValidationError, validate
@@ -24,14 +26,24 @@ class UserCollection(Resource):
 
         user = models.User()
         user.deserialize(request.json)
+        db.session.add(user)
+
+        key = secrets.token_urlsafe(32)
+        apikey = models.ApiKey(
+            key=key,
+            user=user,
+        )
+        db.session.add(apikey)
 
         try:
-            db.session.add(user)
             db.session.commit()
         except IntegrityError:
             raise Conflict(description="Email already exists.")
 
-        return Response(status=201)
+        return Response(
+            status=201,
+            headers={"X-Api-Key": key},
+        )
 
     def get(self):
         response_data = []
