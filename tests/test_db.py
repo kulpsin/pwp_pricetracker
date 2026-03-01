@@ -74,10 +74,13 @@ def _get_product(active: bool=True, product_str: str="1234", notes: str|None=Non
     :return: New product model
     :rtype: Product
     """
+    name = f"test-{product_str}"
+    hruid = Product.gen_hruid(name)
     product = Product(
-        name=f"TestProduct{product_str}",
+        name=name,
         url=f"https://www.mytrackablestore.fi/product/{product_str}",
         active=active,
+        hruid=hruid,
     )
     if notes is not None:
         product.notes = notes
@@ -102,17 +105,17 @@ def _get_price(timestamp: datetime=datetime.now(), value: float=123.45) -> Price
     return price
 
 
-def test_create_user(db_handle):
+def test_create_user(test_db):
     """
     Tests that we can create an user
     """
     user = _get_user()
-    db_handle.session.add(user)
+    test_db.session.add(user)
 
     assert User.query.count() == 1
 
 
-def test_create_all(db_handle):
+def test_create_all(test_db):
     """
     Tests that we can
     1. create all objects: User, Product, Price
@@ -125,10 +128,10 @@ def test_create_all(db_handle):
     price = _get_price()
     product.user = user
     price.product = product
-    db_handle.session.add(user)
-    db_handle.session.add(product)
-    db_handle.session.add(price)
-    db_handle.session.commit()
+    test_db.session.add(user)
+    test_db.session.add(product)
+    test_db.session.add(price)
+    test_db.session.commit()
 
     assert User.query.count() == 1
     assert Product.query.count() == 1
