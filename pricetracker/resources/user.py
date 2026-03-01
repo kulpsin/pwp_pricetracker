@@ -4,7 +4,8 @@
 from flask import Response, request
 from flask_restful import Resource
 from jsonschema import ValidationError, validate
-from werkzeug.exceptions import BadRequest, Conflict
+from werkzeug.exceptions import BadRequest, Conflict, NotFound
+from werkzeug.routing import BaseConverter
 from sqlalchemy.exc import IntegrityError
 
 from .. import models
@@ -68,3 +69,14 @@ class UserItem(Resource):
         db.session.commit()
 
         return Response(status=204)
+
+
+class UserConverter(BaseConverter):
+    def to_python(self, value):
+        db_product = models.User.query.filter_by(id=value).first()
+        if db_product is None:
+            raise NotFound
+        return db_product
+
+    def to_url(self, value):
+        return str(value.id)

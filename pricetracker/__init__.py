@@ -60,6 +60,8 @@ def create_app(test_config: dict|None=None) -> Flask:
     app.cli.add_command(cli.add_worker_key)
 
     # Define URL converters
+    from pricetracker.resources.user import UserConverter
+    app.url_map.converters["user"] = UserConverter
     from pricetracker.resources.product import ProductConverter
     app.url_map.converters["product"] = ProductConverter
     from pricetracker.resources.price import PriceConverter
