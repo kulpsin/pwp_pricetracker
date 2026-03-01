@@ -20,6 +20,8 @@ def require(user=None, resource=None, admin=False, worker=False):
                 raise Unauthorized
             key_hash = ApiKey.key_hash(request.headers.get("X-Api-Key").strip())
             db_key = ApiKey.query.where(ApiKey.key == key_hash).first()
+            if db_key is None:
+                raise Forbidden
 
             if admin:
                 # Admin key is required, skip rest of the rules if success
@@ -70,4 +72,3 @@ def require(user=None, resource=None, admin=False, worker=False):
             return func(*args, **kwargs)
         return wrapped
     return decorator
-
