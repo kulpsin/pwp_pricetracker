@@ -5,12 +5,15 @@ Flask Blueprints.
 """
 from flask import Blueprint, jsonify
 from flask_restful import Api
+from .resources.user import UserCollection, UserItem
 from .resources.product import ProductCollection, ProductItem
 from .resources.price import PriceCollection, PriceItem
 
 api_bp =  Blueprint("api", __name__)
 api = Api(api_bp)
 
+api.add_resource(UserCollection, "/users/")
+api.add_resource(UserItem, "/users/<user:user>/")
 api.add_resource(ProductCollection, "/products/")
 api.add_resource(ProductItem, "/products/<product:product>/")
 api.add_resource(PriceCollection, "/products/<product:product>/prices/")
