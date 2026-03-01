@@ -13,8 +13,9 @@ from .. import models
 from ..db import db
 from .. import auth
 
-''' This helper function makes text URL-friendly by removing special characters '''
 def slugify(text):
+    ''' This helper function makes text URL-friendly
+    by removing special characters '''
     text = text.lower()
     text = re.sub(r"[^\w\s-]", "", text)
     text = re.sub(r"[\s_-]+", "-", text)
@@ -47,9 +48,6 @@ class ProductCollection(Resource):
         try:
             db.session.add(product)
             db.session.commit()
-
-            db.session.flush()
-            product.hdir = f"{slugify(product.name)}-{format(product.id, "x")}"
         except IntegrityError as e:
             raise Conflict(description="Product already exists or violates constraints.") from e
 
@@ -117,4 +115,4 @@ class ProductConverter(BaseConverter):
         return db_product
 
     def to_url(self, value):
-        return value.hdir
+        return f"{slugify(value.name)}-{format(value.id, "x")}"

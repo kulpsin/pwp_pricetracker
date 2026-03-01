@@ -29,8 +29,6 @@ class Product(db.Model):
     notes = db.Column(db.String(512), nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
 
-    hdir = db.Column(db.String(160), unique=True, nullable=False, index=True)
-
     user = db.relationship("User", back_populates="products")
     prices = db.relationship("Price", back_populates="product")
         
