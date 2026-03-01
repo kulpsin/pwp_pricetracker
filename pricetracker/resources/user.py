@@ -2,8 +2,9 @@
 # (https://github.com/UniOulu-Ubicomp-Programming-Courses/pwp-sensorhub-example/blob/ex2-05-validation/app.py)
 
 import secrets
+import uuid
 
-from flask import Response, request
+from flask import Response, request, url_for
 from flask_restful import Resource
 from jsonschema import ValidationError, validate
 from werkzeug.exceptions import BadRequest, Conflict, NotFound
@@ -26,6 +27,7 @@ class UserCollection(Resource):
 
         user = models.User()
         user.deserialize(request.json)
+        user.uuid = uuid.uuid4()
         db.session.add(user)
 
         key = secrets.token_urlsafe(32)
@@ -42,7 +44,10 @@ class UserCollection(Resource):
 
         return Response(
             status=201,
-            headers={"X-Api-Key": key},
+            headers={
+                "X-Api-Key": key,
+                "Location": url_for('api.useritem', user=user) 
+            },
         )
 
     def get(self):
@@ -85,10 +90,14 @@ class UserItem(Resource):
 
 class UserConverter(BaseConverter):
     def to_python(self, value):
-        db_product = models.User.query.filter_by(id=value).first()
+        try:
+            uuid_obj = uuid.UUID(value)
+        except ValueError as e:
+            raise NotFound("Invalid UUID format") from e
+        db_product = models.User.query.filter_by(uuid=uuid_obj).first()
         if db_product is None:
             raise NotFound
         return db_product
 
     def to_url(self, value):
-        return str(value.id)
+        return str(value.uuid)

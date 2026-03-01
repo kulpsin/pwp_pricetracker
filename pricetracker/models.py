@@ -137,7 +137,7 @@ class Price(db.Model):
         }
 
         props = schema["properties"] = {}
-        
+
         props["value"] = {
             "type": "number"
         }
@@ -150,6 +150,7 @@ class Price(db.Model):
 class User(db.Model):
     """User model"""
     id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.Uuid, unique=True)
     email = db.Column(db.String(128), nullable=False, unique=True)
 
     products = db.relationship("Product", back_populates="user")
@@ -157,23 +158,29 @@ class User(db.Model):
 
     def serialize(self):
         return {
-            "id" : self.id,
+            "uuid" : str(self.uuid),
             "email" : self.email
         }
-    
+
     def deserialize(self, doc):
         self.email = doc["email"]
+        if "uuid" in doc:
+            self.uuid = doc["uuid"]
 
     @staticmethod
     def json_schema():
         schema = {
             "type" : "object",
-            "required": ["email", ]
+            "required": ["email"]
         }
         props = schema["properties"] = {}
         props["email"] = {
             "type": "string",
             "maxLength": 128
+        }
+        props["uuid"] = {
+            "type": "string",
+            "format": "uuid",
         }
 
         return schema
