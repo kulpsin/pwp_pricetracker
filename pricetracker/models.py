@@ -4,6 +4,7 @@ Contains definations for all the database data models.
 """
 
 import os
+import re
 import hashlib
 import datetime
 
@@ -28,37 +29,42 @@ class Product(db.Model):
     url = db.Column(db.String(512), nullable=False)
     notes = db.Column(db.String(512), nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
-    hduir = db.Column(db.String(160), unique=True, index=True, nullable=False)
-
+    hruid = db.Column(db.String(160), unique=True, index=True, nullable=False)
 
     user = db.relationship("User", back_populates="products")
     prices = db.relationship("Price", back_populates="product")
-        
+
+    @staticmethod
+    def gen_hruid(text: str) -> str:
+        """Generate human readable unique identifier"""
+        # Make text URL-friendly by removing special characters
+        text = text.lower()
+        text = re.sub(r"[^\w\s-]", "", text)
+        text = re.sub(r"[\s_-]+", "-", text)
+        text = re.sub(r"^-+|-+$", "", text)
+        counter = 1
+        while Product.query.filter_by(hruid=f"{text}-{counter}").first():
+            counter += 1
+        return f"{text}-{counter}"
 
     def serialize(self) -> dict:
-
         """Convert the object into a serializable dictionary."""
-
-        return {
-            "id": self.id,
-            "user_id": self.user_id,
+        doc = {
+            "hruid": self.hruid,
+            "user": self.user and str(self.user.uuid),
             "name": self.name,
             "url": self.url,
-            "notes": self.notes,
             "active": self.active
         }
+        if self.notes:
+            doc["notes"] = self.notes
+        return doc
 
     def deserialize(self, doc: dict) -> None:
-
         """Update object attributes from a dictionary of values."""
-
         # Required fields
-        if "user_id" in doc:
-            self.user_id = int(doc["user_id"]) # Ensure integer
-        if "name" in doc:
-            self.name = doc["name"]
-        if "url" in doc:
-            self.url = doc["url"]
+        self.name = doc["name"]
+        self.url = doc["url"]
 
         # Optional fields
         if "notes" in doc:
@@ -68,22 +74,26 @@ class Product(db.Model):
 
     @staticmethod
     def json_schema() -> dict:
-
         """Return the JSON schema rules for this object's data."""
 
         # Required fields
         schema = {
             "type": "object",
-            "required": ["user_id", "name", "url"]
+            "required": ["name", "url"]
         }
-
 
         props = schema["properties"] = {}
 
         props["name"] = {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 128
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+        }
+
+        props["hruid"] = {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
         }
 
         props["url"] = {
@@ -92,8 +102,9 @@ class Product(db.Model):
             "maxLength": 512
         }
 
-        props["user_id"] = {
-            "type": "integer"
+        props["user"] = {
+            "type": "string",
+            "format": "uuid",
         }
 
         props["notes"] = {

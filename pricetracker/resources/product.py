@@ -2,7 +2,7 @@
 
 import re
 
-from flask import Response, request
+from flask import Response, request, url_for
 from flask_restful import Resource
 from jsonschema import ValidationError, validate
 from werkzeug.exceptions import BadRequest, Conflict, NotFound
@@ -42,27 +42,30 @@ class ProductCollection(Resource):
         except ValidationError as e:
             raise BadRequest(description=str(e)) from e
 
+        hruid = models.Product.gen_hruid(request.json['name'])
+
         product = models.Product()
         product.deserialize(request.json)
+        product.hruid = hruid
+        key_hash = models.ApiKey.key_hash(request.headers.get("X-Api-Key").strip())
+        product.user = models.User.query.join(models.ApiKey).filter(
+            models.ApiKey.key == key_hash
+        ).first()
 
-        base_hduir = slugify(product.name)
-        hduir = base_hduir
-        counter = 1
-
-        while models.Product.query.filter_by(hduir=hduir).first():
-            hduir = f"{base_hduir}-{counter}"
-            counter += 1
-        
-        product.hduir = hduir
+        db.session.add(product)
 
         try:
-            db.session.add(product)
             db.session.commit()
         except IntegrityError as e:
             db.session.rollback()
             raise Conflict(description="Product already exists or violates constraints.") from e
 
-        return Response(status=201)
+        return Response(
+            status=201,
+            headers={
+                "Location": url_for('api.productitem', product=product),
+            },
+        )
 
     def get(self):
 
@@ -108,6 +111,7 @@ class ProductItem(Resource):
             raise Conflict(description="Oops...Something went wrong.") from e
 
         return Response(status=204)
+
     @auth.require()
     def delete(self, product):
 
@@ -121,10 +125,10 @@ class ProductItem(Resource):
 
 class ProductConverter(BaseConverter):
     def to_python(self, value):
-        db_product = models.Product.query.filter_by(id=value).first()
+        db_product = models.Product.query.filter_by(hruid=value).first()
         if db_product is None:
             raise NotFound
         return db_product
 
     def to_url(self, value):
-        return value.hduir
+        return value.hruid
