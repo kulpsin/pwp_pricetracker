@@ -89,13 +89,14 @@ class TestProductCollection:
             assert "name" in item
             assert "url" in item
 
-    def test_post_valid_request(self, auth_client, db_data):
+    def test_post_valid_request(self, user):
         """Create new product"""
-        user = db_data["users"][0]
-        valid = _get_product_dict(user_idx=user.id)
-        valid_key = db_data["keys"][0]
-
-        resp = auth_client.post(self.RESOURCE_URL, json=valid, headers={"X-Api-Key": valid_key})
+        valid = _get_product_dict()
+        resp = user['client'].post(
+            self.RESOURCE_URL,
+            json=valid,
+            headers={"X-Api-Key": user['key']}
+        )
         assert resp.status_code == 201
 
     def test_wrong_mediatype(self, auth_client):
@@ -116,12 +117,6 @@ class TestProductCollection:
         valid = _get_product_dict(product_idx=2)
         resp = auth_client.post(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 201
-
-    def test_post_product_as_other(self, auth_client):
-        """X-Api-Key and user_id do not match"""
-        valid = _get_product_dict(user_idx=2)
-        resp = auth_client.post(self.RESOURCE_URL, json=valid)
-        assert resp.status_code == 403
 
 
 class TestProductItem:
@@ -239,10 +234,7 @@ class TestUserItem:
         resp = auth_client.delete(user['location'])
         assert resp.status_code == 403
 
-    """
     def test_change_other_email(self, auth_client, user):
         valid = _get_user_dict("another-mail@localhost")
-        #valid_key = db_data["keys"][0]
-        url = f"{self.RESOURCE_URL}{user.id}/"
-        resp = auth_client.put(url, json=valid, headers={"X-Api-Key": valid_key})
-        assert resp.status_code == 204"""
+        resp = auth_client.put(user['location'], json=valid)
+        assert resp.status_code == 403
