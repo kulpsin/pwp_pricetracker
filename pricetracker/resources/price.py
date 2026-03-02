@@ -1,3 +1,6 @@
+# This code has the same structure as the Sensorhub example provided in the course material
+# (https://github.com/UniOulu-Ubicomp-Programming-Courses/pwp-sensorhub-example/blob/ex2-05-validation/app.py)
+
 from datetime import datetime
 from flask import Response, request
 from flask_restful import Resource
