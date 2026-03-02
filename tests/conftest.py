@@ -86,6 +86,7 @@ def fixture_test_app():
         "SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname,
         "TESTING": True,
         "SECRET_KEY": 'test',
+        "CACHE_TYPE": 'SimpleCache',
     }
 
     app = create_app(config)

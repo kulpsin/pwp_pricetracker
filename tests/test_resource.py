@@ -19,6 +19,13 @@ def _get_product_dict(user_idx: int=1, product_idx: int=0):
         "url": f"http://localhost/product-{product_idx}",
     }
 
+def _get_price_dict(value: float=9.99, timestamp: str="2026-03-02T23:59:39"):
+    """Creates a valid price dict object to be used for POST tests."""
+    return {
+        "value": value,
+        "timestamp": timestamp,
+    }
+
 def _get_user_dict(email: str="test-user-1@localhost"):
     """Creates a valid user dict object to be used for POST request."""
     return {
@@ -72,6 +79,92 @@ def fixture_product(user):
         user['client'].delete(location, headers=headers)
     except Exception:
         pass
+
+
+@pytest.fixture(name="price")
+def fixture_price(product):
+    """Creates a price entry on an existing product"""
+    req = _get_price_dict()
+    collection_url = product['location'] + "prices/"
+    resp = product['client'].post(collection_url, json=req, headers=product['headers'])
+    assert resp.status_code == 201
+    location = resp.headers.get('Location')
+
+    yield {
+        "req": req,
+        "location": location,
+        "collection_url": collection_url,
+        "product": product,
+        "client": product['client'],
+        "headers": product['headers'],
+    }
+
+
+class TestPriceCollection:
+    """Group all price collection related tests"""
+
+    def test_get_empty(self, product):
+        """GET prices for a product with no prices returns empty list"""
+        url = product['location'] + "prices/"
+        resp = product['client'].get(url)
+        assert resp.status_code == 200
+        assert resp.json == []
+
+    def test_post_valid(self, product):
+        """POST a valid price entry"""
+        url = product['location'] + "prices/"
+        req = _get_price_dict()
+        resp = product['client'].post(url, json=req, headers=product['headers'])
+        assert resp.status_code == 201
+
+    def test_post_and_get(self, product):
+        """POST a price then GET the collection"""
+        url = product['location'] + "prices/"
+        req = _get_price_dict()
+        product['client'].post(url, json=req, headers=product['headers'])
+        resp = product['client'].get(url)
+        assert resp.status_code == 200
+        body = resp.json
+        assert len(body) >= 1
+        assert body[0]["price"] == 9.99
+
+    def test_post_wrong_mediatype(self, product):
+        """Only JSON mediatype is allowed"""
+        url = product['location'] + "prices/"
+        req = _get_price_dict()
+        resp = product['client'].post(url, data=json.dumps(req), headers=product['headers'])
+        assert resp.status_code == 415
+
+    def test_post_missing_field(self, product):
+        """value and timestamp are required"""
+        url = product['location'] + "prices/"
+        req = _get_price_dict()
+        req.pop("value")
+        resp = product['client'].post(url, json=req, headers=product['headers'])
+        assert resp.status_code == 400
+
+
+class TestPriceItem:
+    """Group all price item related tests"""
+
+    def test_get(self, price):
+        """GET a specific price entry"""
+        resp = price['client'].get(price['location'])
+        assert resp.status_code == 200
+
+    def test_get_not_found(self, price):
+        """GET a price that does not exist"""
+        item_url = f"{price['product']['location']}prices/99999/"
+        resp = price['client'].get(item_url)
+        assert resp.status_code == 404
+
+    def test_delete(self, price):
+        """DELETE a specific price entry"""
+        resp = price['client'].delete(price['location'], headers=price['headers'])
+        assert resp.status_code == 204
+        # Verify it's gone
+        resp = price['client'].get(price['location'])
+        assert resp.status_code == 404
 
 
 class TestProductCollection:
@@ -168,6 +261,39 @@ class TestProductItem:
             headers=product['headers']
         )
         assert resp.status_code == 400
+
+    def test_get_cached(self, product):
+        """Test that GET response is cached"""
+
+        # Bypassing the API with these
+        from pricetracker import cache
+        from pricetracker.db import db as _db
+        from pricetracker.models import Product
+
+        client = product['client']
+        location = product['location']
+
+        # First request populates the cache
+        resp = client.get(location)
+        assert resp.status_code == 200
+        original_name = resp.json["name"]
+
+        # Modify product directly in DB, bypassing the cache
+        hruid = location.rstrip("/").split("/")[-1]
+        db_product = Product.query.filter_by(hruid=hruid).first()
+        db_product.name = "test-changed-by-db"
+        _db.session.commit()
+
+        # Second request should still return cached data
+        resp = client.get(location)
+        assert resp.status_code == 200
+        assert resp.json["name"] == original_name
+
+        # After clearing the cache, the DB change is visible
+        cache.clear()
+        resp = client.get(location)
+        assert resp.status_code == 200
+        assert resp.json["name"] == "test-changed-by-db"
 
     def test_put_product_owned_by_other(self, auth_client, product):
         """Name conflict is ok"""
