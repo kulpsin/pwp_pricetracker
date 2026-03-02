@@ -29,7 +29,7 @@ class ProductCollection(Resource):
     Provides methods to create new products and list all products.
     """
 
-    @auth.require()
+    @auth.require(owner=False)
     def post(self):
 
         """Create a new product."""
@@ -90,7 +90,7 @@ class ProductItem(Resource):
 
         return product.serialize()
 
-    @auth.require()
+    @auth.require(owner=True)
     def put(self, product):
 
         """Update an existing product."""
@@ -112,7 +112,7 @@ class ProductItem(Resource):
 
         return Response(status=204)
 
-    @auth.require()
+    @auth.require(owner=True)
     def delete(self, product):
 
         """Delete a specific product."""

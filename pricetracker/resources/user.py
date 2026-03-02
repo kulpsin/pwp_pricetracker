@@ -46,7 +46,7 @@ class UserCollection(Resource):
             status=201,
             headers={
                 "X-Api-Key": key,
-                "Location": url_for('api.useritem', user=user) 
+                "Location": url_for('api.useritem', user=user)
             },
         )
 
@@ -62,6 +62,7 @@ class UserItem(Resource):
     def get(self, user):
         return user.serialize()
 
+    @auth.require(owner=True)
     def put(self, user):
         if not request.json:
             return "Request content type must be JSON", 415
@@ -80,7 +81,7 @@ class UserItem(Resource):
             raise Conflict(description="Email already exists.")
         return Response(status=204)
 
-    @auth.require()
+    @auth.require(owner=True)
     def delete(self, user):
         db.session.delete(user)
         db.session.commit()
