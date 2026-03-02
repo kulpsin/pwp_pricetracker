@@ -10,7 +10,7 @@ import datetime
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import event
+from sqlalchemy import event, UniqueConstraint
 
 from . import utils
 from .db import db
@@ -121,6 +121,7 @@ class Product(db.Model):
 
 class Price(db.Model):
     """Price model"""
+    __table_args__ = (db.UniqueConstraint("product_id", "timestamp"),)
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey("product.id", ondelete="CASCADE"))
     value = db.Column(db.Float, nullable=False)

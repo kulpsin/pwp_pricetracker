@@ -1,8 +1,10 @@
+
 # This code has the same structure as the Sensorhub example provided in the course material
 # (https://github.com/UniOulu-Ubicomp-Programming-Courses/pwp-sensorhub-example/blob/ex2-05-validation/app.py)
 
 from datetime import datetime
-from flask import Response, request
+
+from flask import Response, request, url_for
 from flask_restful import Resource
 from jsonschema import ValidationError, validate
 from werkzeug.exceptions import BadRequest, Conflict, NotFound
@@ -48,7 +50,12 @@ class PriceCollection(Resource):
             db.session.rollback()
             raise Conflict(description="Price entry error.")
         
-        return Response(status=201)
+        return Response(
+            status=201,
+            headers={
+                "Location": url_for('api.priceitem', product=product, price=price),
+            },
+        )
 
 class PriceItem(Resource):
     @cache.cached(timeout=3600)
@@ -67,16 +74,22 @@ class PriceItem(Resource):
     
 
 class PriceConverter(BaseConverter):
+
     def to_python(self, value):
         try:
             timestamp = datetime.fromisoformat(value)
         except ValueError as e:
             raise NotFound("Invalid timestamp format") from e
-        
-        db_price = models.Price.query.filter_by(timestamp=timestamp).first()
+        # Extract product hruid from the request path
+        # URL pattern: /api/products/<product_hruid>/prices/<timestamp>/
+        product_hruid = request.path.split("/products/")[1].split("/prices/")[0]
+        db_price = models.Price.query.join(models.Product).filter(
+            models.Product.hruid == product_hruid,
+            models.Price.timestamp == timestamp
+        ).first()
         if db_price is None:
             raise NotFound
         return db_price
 
     def to_url(self, value):
-        return str(value.timestamp)
+        return value.timestamp.isoformat()
