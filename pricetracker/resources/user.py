@@ -50,6 +50,7 @@ class UserCollection(Resource):
             },
         )
 
+    @auth.require(admin=True)
     def get(self):
         response_data = []
         users = models.User.query.all()
@@ -59,6 +60,7 @@ class UserCollection(Resource):
 
 class UserItem(Resource):
 
+    @auth.require(owner=True)
     def get(self, user):
         return user.serialize()
 
