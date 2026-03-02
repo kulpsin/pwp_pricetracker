@@ -92,6 +92,12 @@ def generate_test_data() -> None:
         email="test-user-1@localhost",
     )
     db.session.add(u)
+    try:
+        db.session.commit()
+    except exc.IntegrityError:
+        print("User already exists")
+        db.session.rollback()
+        return
 
     # fun bug: the default value of "True" for the "active" parameter is only set when the product
     #          is actually inserted into the database, so we have to explicitly set it here if we
@@ -103,19 +109,22 @@ def generate_test_data() -> None:
                 "https://www.gigantti.fi/product/gaming/pelikonsolit-ja-tarvikkeet/playstation/"
                 "playstation-konsolit/playstation-5-slim-standard-edition-e-runko-1-tb/988057iuoe"),
             notes="Standard edition",
-            active=True
+            active=True,
+            hruid=Product.gen_hruid("PS5"),
         ),
         Product(
             name="Ikea desk",
             url=("https://www.ikea.com/fi/fi/p/anfallare-alex-tyoepoeytae-bambu-mustanruskea-"
                  "s89417745/?recently_viewed=b"),
-            active=True
+            active=True,
+            hruid=Product.gen_hruid("Ikea desk"),
         ),
         Product(
             name="Broken product",
             url="https://www.outdated_url.com",
             notes="This is a product with a non-functional url.",
-            active=False
+            active=False,
+            hruid=Product.gen_hruid("Broken product"),
         ),
     ]
 
