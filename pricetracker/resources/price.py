@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Response, request
 from flask_restful import Resource
 from jsonschema import ValidationError, validate
@@ -61,12 +62,18 @@ class PriceItem(Resource):
         db.session.commit()
         return Response(status=204)
     
+
 class PriceConverter(BaseConverter):
     def to_python(self, value):
-        db_price = models.Price.query.filter_by(id=value).first()
+        try:
+            timestamp = datetime.fromisoformat(value)
+        except ValueError as e:
+            raise NotFound("Invalid timestamp format") from e
+        
+        db_price = models.Price.query.filter_by(timestamp=timestamp).first()
         if db_price is None:
             raise NotFound
         return db_price
 
     def to_url(self, value):
-        return str(value.id)
+        return str(value.timestamp)
