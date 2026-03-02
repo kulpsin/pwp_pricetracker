@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from .. import models
 from ..db import db
+from .. import auth
 
 class PriceCollection(Resource):
     def get(self, product):
@@ -20,6 +21,7 @@ class PriceCollection(Resource):
         history.sort(key=lambda x: x["timestamp"])
         return history, 200
 
+    @auth.require(owner=False)
     def post(self, product):
         """Post a new snapshot to an existing price history"""
         if not request.is_json:
@@ -44,12 +46,13 @@ class PriceCollection(Resource):
         return Response(status=201)
 
 class PriceItem(Resource):
-    def get(self, price):
+    def get(self, product, price):
         """Get a particular price from the history at a specific timestamp"""
 
         return price.serialize()
 
-    def delete(self, price):
+    @auth.require()
+    def delete(self, product, price):
         """Delete an existing snapshot from the price history"""
 
         db.session.delete(price)

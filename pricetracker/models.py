@@ -136,7 +136,7 @@ class Price(db.Model):
             "id": self.id,
             "product_id": self.product_id,
             "value": self.value,
-            "timestamp": self.timestamp
+            "timestamp": self.timestamp.isoformat()
         }
 
     def deserialize(self, doc):
