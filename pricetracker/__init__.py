@@ -7,8 +7,11 @@ add product price information to tracked products.
 import os
 
 from flask import Flask
+from flask_caching import Cache
 
 import pricetracker.utils as utils
+
+cache = Cache()
 
 
 # Used https://flask.palletsprojects.com/en/stable/tutorial/factory/#the-application-factory
@@ -31,6 +34,7 @@ def create_app(test_config: dict|None=None) -> Flask:
         SECRET_KEY='dev',
         SQLALCHEMY_DATABASE_URI="sqlite:///" + os.path.join(app.instance_path, "development.db"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        CACHE_TYPE='SimpleCache',
     )
 
     if test_config is None:
@@ -51,6 +55,8 @@ def create_app(test_config: dict|None=None) -> Flask:
     # pylint: disable=C0415 (wrong-import-position)
     from .db import db
     db.init_app(app)
+
+    cache.init_app(app)
     # pylint: disable=C0415 (wrong-import-position)
     from . import cli
     app.cli.add_command(cli.init_db_command)

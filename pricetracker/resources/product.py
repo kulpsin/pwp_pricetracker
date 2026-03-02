@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 
 from .. import models
 from ..db import db
-from .. import auth
+from .. import auth, cache
 
 def slugify(text):
     ''' This helper function makes text URL-friendly
@@ -67,6 +67,7 @@ class ProductCollection(Resource):
             },
         )
 
+    @cache.cached(timeout=60)
     def get(self):
 
         """Retrieve and return a list of all products."""
@@ -84,6 +85,7 @@ class ProductItem(Resource):
     Provides methods to retrieve, update, or delete a specific product.
     """
 
+    @cache.cached(timeout=60)
     def get(self, product):
 
         """Retrieve a specific product."""

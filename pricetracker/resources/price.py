@@ -7,9 +7,10 @@ from sqlalchemy.exc import IntegrityError
 
 from .. import models
 from ..db import db
-from .. import auth
+from .. import auth, cache
 
 class PriceCollection(Resource):
+    @cache.cached(timeout=60)
     def get(self, product):
         """Get the entire price history associated with a product sorted by timestamp"""
         history = []
@@ -46,6 +47,7 @@ class PriceCollection(Resource):
         return Response(status=201)
 
 class PriceItem(Resource):
+    @cache.cached(timeout=3600)
     def get(self, product, price):
         """Get a particular price from the history at a specific timestamp"""
 
