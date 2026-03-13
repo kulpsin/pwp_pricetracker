@@ -40,7 +40,8 @@ def require(admin=False, worker=False, owner=True):
                                 request.endpoint)
                     raise Forbidden
                 return func(*args, **kwargs)
-            if worker:
+            # Worker suppport will be added during worker development
+            if worker:   # pragma: no cover
                 # Worker key is required, skip rest of the rules if success
                 if not db_key.worker:
                     logger.info("Worker endpoint requested without worker X-Api-Key: %s",

@@ -57,6 +57,68 @@ def fixture_user(client):
         pass
 
 
+from pricetracker.models import ApiKey
+from pricetracker.db import db
+@pytest.fixture(name="admin")
+def fixture_admin(client):
+    """Creates new user"""
+    email = "new-admin-user-1@localhost"
+    resp = client.post("/api/users/", json={"email": email})
+    assert resp.status_code == 201
+    key = resp.headers.get('X-Api-Key')
+    location = resp.headers.get('Location')
+    headers = {'X-Api-Key': key}
+    key_hash = ApiKey.key_hash(key)
+    a = ApiKey.query.where(ApiKey.key == key_hash).first()
+    a.admin = True
+    db.session.add(a)
+    db.session.commit()
+
+    yield {
+        "email": email,
+        "key": key,
+        "location": location,
+        "client": client,
+        "headers": headers
+    }
+
+    # Clean up if needed: user might already be gone at this point
+    try:
+        client.delete(location, headers=headers)
+    except Exception:
+        pass
+
+
+@pytest.fixture(name="worker")
+def fixture_worker(client):
+    """Creates new user"""
+    email = "new-worker-user-1@localhost"
+    resp = client.post("/api/users/", json={"email": email})
+    assert resp.status_code == 201
+    key = resp.headers.get('X-Api-Key')
+    location = resp.headers.get('Location')
+    headers = {'X-Api-Key': key}
+    key_hash = ApiKey.key_hash(key)
+    a = ApiKey.query.where(ApiKey.key == key_hash).first()
+    a.worker = True
+    db.session.add(a)
+    db.session.commit()
+
+    yield {
+        "email": email,
+        "key": key,
+        "location": location,
+        "client": client,
+        "headers": headers
+    }
+
+    # Clean up if needed: user might already be gone at this point
+    try:
+        client.delete(location, headers=headers)
+    except Exception:
+        pass
+
+
 @pytest.fixture(name="product")
 def fixture_product(user):
     """Creates new product"""
@@ -166,6 +228,13 @@ class TestPriceItem:
         resp = price['client'].get(price['location'])
         assert resp.status_code == 404
 
+    def test_worker_post(self, worker, product):
+        """Test worker posting"""
+        url = product['location'] + "prices/"
+        valid = _get_price_dict()
+        resp = worker['client'].post(url, json=valid, headers=worker['headers'])
+        assert resp.status_code == 201
+
 
 class TestProductCollection:
     """Group of all product collection related tests"""
@@ -238,6 +307,11 @@ class TestProductItem:
         resp = product['client'].put(product['location'], json=prod, headers=product['headers'])
         assert resp.status_code == 204
 
+    def test_put_empty_body(self, product):
+        """Empty request body"""
+        resp = product['client'].put(product['location'], json=dict(), headers=product['headers'])
+        assert resp.status_code == 415
+
     def test_wrong_mediatype(self,  product):
         """Only JSON mediatype is allowed"""
         resp = product['client'].get(product['location'], headers=product['headers'])
@@ -296,19 +370,53 @@ class TestProductItem:
         assert resp.json["name"] == "test-changed-by-db"
 
     def test_put_product_owned_by_other(self, auth_client, product):
-        """Name conflict is ok"""
+        """Can't modify other users' products"""
         valid = _get_product_dict()
         resp = auth_client.put(product['location'], json=valid)
         assert resp.status_code == 403
 
+    def test_put_product_notes(self, product):
+        """Modify product notes"""
+        valid = product['req']
+        valid['notes'] = "Notes about the product"
+        resp = product['client'].put(product['location'], json=valid, headers=product['headers'])
+        assert resp.status_code == 204
+
+        # Check that notes were stored
+        resp = product['client'].get(product['location'])
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+
+        assert "notes" in body
+        assert body['notes'] == valid['notes']
+
 
 class TestUserCollection:
     RESOURCE_URL = "/api/users/"
+    def test_get_no_auth(self, client):
+        """No apikey"""
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 401
+
+    def test_get_invalid_auth(self, client):
+        """Invalid apikey"""
+        resp = client.get(
+            self.RESOURCE_URL,
+            headers={"X-Api-Key": "badKeyRightHere"})
+        assert resp.status_code == 403
 
     def test_get(self, auth_client):
-        """Who has access to user-listing? Admin?"""
+        """Normal apikey"""
         resp = auth_client.get(self.RESOURCE_URL)
+        assert resp.status_code == 403
+
+    def test_get_admin(self, admin):
+        """Admin apikey"""
+        resp = admin['client'].get(
+            self.RESOURCE_URL,
+            headers={"X-Api-Key": admin['key']})
         assert resp.status_code == 200
+
         body = json.loads(resp.data)
         for item in body:
             assert "email" in item
@@ -347,16 +455,48 @@ class TestUserItem:
         assert body["email"] == user['email']
         assert body['uuid'] in user['location']
 
+    def test_post_invalid(self, client):
+        email = "bad-test-user-1@localhost"
+        resp = client.post("/api/users/", json={"emailtypo": email})
+        assert resp.status_code == 400
+
     def test_change_own_email(self, client, user):
         valid = _get_user_dict("another-mail@localhost")
         resp = client.put(user['location'], json=valid, headers={"X-Api-Key": user['key']})
         assert resp.status_code == 204
 
+    def test_put_invalid_data(self, user):
+        """Missing field: email"""
+        resp = user['client'].get(user['location'], headers={"X-Api-Key": user['key']})
+        payload = resp.json
+        del payload["email"]
+        resp = user['client'].put(user['location'], json=payload, headers={"X-Api-Key": user['key']})
+        assert resp.status_code == 400
+
+    def test_put_email_taken(self, client, user):
+        """Email change to existing"""
+        # Create additional user
+        resp = client.post(
+            TestUserCollection.RESOURCE_URL,
+            json={"email": "another-user@localhost"},
+        )
+        assert resp.status_code == 201
+        resp = user['client'].get(user['location'], headers={"X-Api-Key": user['key']})
+        assert resp.status_code == 200
+        payload = resp.json
+        payload['email'] = "another-user@localhost"
+        resp = user['client'].put(
+            user['location'],
+            json=payload,
+            headers={"X-Api-Key": user['key']}
+        )
+        assert resp.status_code == 409
+
     def test_delete_user(self, client, user):
         resp = client.delete(user['location'], headers={"X-Api-Key": user['key']})
         assert resp.status_code == 204
 
-    def test_delete_user(self, auth_client, user):
+    def test_delete_other_user(self, auth_client, user):
         resp = auth_client.delete(user['location'])
         assert resp.status_code == 403
 

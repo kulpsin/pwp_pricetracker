@@ -3,7 +3,6 @@
 
 """ This module defines the resource module for products. """
 
-import re
 
 from flask import Response, request, url_for
 from flask_restful import Resource
@@ -16,14 +15,6 @@ from .. import models
 from ..db import db
 from .. import auth, cache
 
-def slugify(text):
-    ''' This helper function makes text URL-friendly
-    by removing special characters '''
-    text = text.lower()
-    text = re.sub(r"[^\w\s-]", "", text)
-    text = re.sub(r"[\s_-]+", "-", text)
-    text = re.sub(r"^-+|-+$", "", text)
-    return text
 
 class ProductCollection(Resource):
 
@@ -59,7 +50,9 @@ class ProductCollection(Resource):
 
         try:
             db.session.commit()
-        except IntegrityError as e:
+        except IntegrityError as e:   # pragma: no cover
+            # All unique identifiers are generated during request automatically,
+            # this code should not be reached ever.
             db.session.rollback()
             raise Conflict(description="Product already exists or violates constraints.") from e
 
@@ -99,7 +92,6 @@ class ProductItem(Resource):
     def put(self, product):
 
         """Update an existing product."""
-
         if not request.json:
             return "Request content type must be JSON", 415
 

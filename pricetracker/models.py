@@ -7,10 +7,11 @@ import os
 import re
 import hashlib
 import datetime
+import uuid
 
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import event, UniqueConstraint
+from sqlalchemy import event
 
 from . import utils
 from .db import db
@@ -180,7 +181,7 @@ class User(db.Model):
     def deserialize(self, doc):
         self.email = doc["email"]
         if "uuid" in doc:
-            self.uuid = doc["uuid"]
+            self.uuid = uuid.UUID(doc["uuid"])
 
     @staticmethod
     def json_schema():

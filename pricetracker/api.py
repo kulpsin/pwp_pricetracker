@@ -20,7 +20,7 @@ api.add_resource(PriceCollection, "/products/<product:product>/prices/")
 api.add_resource(PriceItem, "/products/<product:product>/prices/<price:price>/")
 
 @api_bp.route('/hello')
-def hello():
+def hello():  # pragma: no cover
     """
     Placeholder test route. Safe to be removed real endpoints
     have been added, or replace with /health endpoint.

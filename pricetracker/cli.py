@@ -3,6 +3,7 @@
 CLI tools for Price Tracker
 """
 
+import sys
 import datetime
 import random
 import secrets
@@ -14,6 +15,7 @@ from sqlalchemy import exc
 from .db import db
 from .models import User, Product, Price, ApiKey
 
+sys.tracebacklimit = 0
 
 @click.command("add-admin-user")
 @click.argument("email")
@@ -31,8 +33,11 @@ def add_admin_user(email: str) -> None:
         user=u,
     )
     db.session.add(a)
-
-    db.session.commit()
+    try:
+        db.session.commit()
+    except exc.IntegrityError:
+        db.session.rollback()
+        raise ValueError(f"User with email '{email}' already exists") from None
     print("Admin user has successfully been created, please store following ApiKey securely, "
           "it cannot be recovered.")
     print(key)
@@ -47,8 +52,7 @@ def add_worker_key(email: str) -> None:
         email=email,
     ).first()
     if not u:
-        print("User does not exist")
-        return
+        raise ValueError(f"User with email '{email}' does not exist")
     key = secrets.token_urlsafe(32)
     a = ApiKey(
         key=key,
@@ -76,11 +80,8 @@ def init_db_command() -> None:
 def remove_test_data() -> None:
     """Removes the user 'test-user-1@localhost'"""
     User.query.where(User.email == 'test-user-1@localhost').delete()
-    try:
-        db.session.commit()
-    except exc.IntegrityError:
-        db.session.rollback()
-    print("DONE")
+    db.session.commit()
+    print("Testdata has been removed")
 
 
 @click.command("testgen")
@@ -95,9 +96,8 @@ def generate_test_data() -> None:
     try:
         db.session.commit()
     except exc.IntegrityError:
-        print("User already exists")
         db.session.rollback()
-        return
+        raise RuntimeError("Testdata has already been generated") from None
 
     # fun bug: the default value of "True" for the "active" parameter is only set when the product
     #          is actually inserted into the database, so we have to explicitly set it here if we
@@ -143,8 +143,11 @@ def generate_test_data() -> None:
                 product.prices.append(price)
     try:
         db.session.commit()
-    except exc.IntegrityError:
+    except exc.IntegrityError:  # pragma: no cover
+        # This should never happen
         print("Already exists")
         db.session.rollback()
-    else:
-        print("Created successfully")
+        raise RuntimeError(
+            "Testuser has been created but failed to generate product-data."
+        ) from None
+    print("Created successfully")

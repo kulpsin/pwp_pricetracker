@@ -42,6 +42,12 @@ class TestAddWorkerKey:
             result = runner.invoke(add_worker_key, [email])
             assert result.exit_code == 0
 
+    def test_invalid_email(self, test_app):
+        """Invalid email: does not exist"""
+        runner = CliRunner()
+        result = runner.invoke(add_worker_key, ["nonexistent-address@localhost"])
+        assert result.exit_code == 1
+
 
 class TestInitDB:
     """Test related to the CLI command which is used to initialize the database"""
@@ -67,3 +73,13 @@ class TestTestData:
         runner = CliRunner()
         result = runner.invoke(remove_test_data)
         assert result.exit_code == 0
+        result = runner.invoke(remove_test_data)
+        assert result.exit_code == 0
+
+    def test_duplicate(self, test_app):
+        """Invoke two times in row"""
+        runner = CliRunner()
+        result = runner.invoke(generate_test_data)
+        assert result.exit_code == 0
+        result = runner.invoke(generate_test_data)
+        assert result.exit_code == 1

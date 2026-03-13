@@ -13,7 +13,9 @@ from datetime import datetime
 
 import pytest
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import event
+from werkzeug.exceptions import BadRequest, Conflict, NotFound
 
 from pricetracker.models import Product, Price, User
 from pricetracker.db import db
@@ -145,3 +147,26 @@ def test_create_all(test_db):
     assert db_price in db_product.prices
     assert db_product.user == db_user
     assert db_product in db_user.products
+
+
+def test_product_duplicate(test_db):
+    """Duplicate product"""
+    name = f"test-dup-1"
+    hruid = Product.gen_hruid(name)
+    product = Product(
+        name=name,
+        url=f"https://www.mytrackablestore.fi/product/dup_test",
+        active=True,
+        hruid=hruid,
+    )
+    test_db.session.add(product)
+    test_db.session.commit()
+    product = Product(
+        name=name,
+        url=f"https://www.mytrackablestore.fi/product/dup_test",
+        active=True,
+        hruid=hruid,
+    )
+    test_db.session.add(product)
+    with pytest.raises(IntegrityError):
+        test_db.session.commit()
