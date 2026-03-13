@@ -18,6 +18,26 @@ from .. import auth
 class UserCollection(Resource):
 
     def post(self):
+        """Create a new user
+        ---
+        security: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        responses:
+          201:
+            description: New product has been created
+            headers:
+              X-Api-Key:
+                $ref: '#/components/headers/X-Api-Key'
+          400:
+            description: BadRequest
+          409:
+            description: Conflict, an user with the same email address exists
+        """
         if not request.json:
             return "Request content type must be JSON", 415
         try:

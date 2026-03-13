@@ -7,6 +7,7 @@ https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/implementing-rest-api
 """
 
 import logging
+from functools import wraps
 
 from flask import request
 from werkzeug.exceptions import Forbidden, Unauthorized
@@ -20,6 +21,7 @@ logger.setLevel(logging.INFO)
 def require(admin=False, worker=False, owner=True):
     """Test that the X-Api-Key header is set and correct"""
     def decorator(func):
+        @wraps(func)
         def wrapped(*args, **kwargs):
 
             if "X-Api-Key" not in request.headers:

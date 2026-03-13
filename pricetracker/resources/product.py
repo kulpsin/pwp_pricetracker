@@ -25,8 +25,18 @@ class ProductCollection(Resource):
 
     @auth.require(owner=False)
     def post(self):
-
-        """Create a new product."""
+        """Create a new product.
+        ---
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        responses:
+          201:
+            description: New product has been created
+        """
 
         if not request.is_json:
             return "Request content type must be JSON", 415
@@ -65,8 +75,19 @@ class ProductCollection(Resource):
 
     @cache.cached(timeout=60)
     def get(self):
-
-        """Retrieve and return a list of all products."""
+        """Retrieve and return a list of all products.
+        ---
+        security: []
+        responses:
+          200:
+            description: A list of products
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Product'
+        """
 
         response_data = []
         products = models.Product.query.all()

@@ -9,6 +9,8 @@ import os
 from flask import Flask
 from flask_caching import Cache
 
+from flasgger import Swagger
+
 import pricetracker.utils as utils
 
 cache = Cache()
@@ -35,6 +37,13 @@ def create_app(test_config: dict|None=None) -> Flask:
         SQLALCHEMY_DATABASE_URI="sqlite:///" + os.path.join(app.instance_path, "development.db"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         CACHE_TYPE='SimpleCache',
+        SWAGGER={
+            'openapi': '3.0.4',
+        },
+    )
+    swagger = Swagger(
+        app,
+        template_file=os.path.join('docs', 'schema.yml'),
     )
 
     if test_config is None:

@@ -18,7 +18,26 @@ from .. import auth, cache
 class PriceCollection(Resource):
     @cache.cached(timeout=60)
     def get(self, product):
-        """Get the entire price history associated with a product sorted by timestamp"""
+        """Get the entire price history associated with a product sorted by timestamp
+        ---
+        security: []
+        parameters:
+          - name: product
+            in: path
+            required: true
+        responses:
+          200:
+            description: A list of prices for the product
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Price'
+                example:
+                  - value: 0.72
+                    timestamp: "2020-03-14T15:32:52"
+                  - value: 4.9
+                    timestamp: "2020-03-14T15:32:52"
+        """
         history = []
         for price in product.prices:
             history.append({
