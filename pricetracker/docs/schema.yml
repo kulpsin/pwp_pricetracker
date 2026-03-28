@@ -8,6 +8,31 @@ components:
       type: apiKey
       name: X-Api-Key
       in: header
+  parameters:
+    user:
+      description: UUID
+      in: path
+      name: user
+      required: true
+      schema:
+        type: string
+        example: "550e8400-e29b-41d4-a716-446655440000"
+    product:
+      description: HRUID
+      in: path
+      name: product
+      required: true
+      schema:
+        type: string
+        example: "teddy-bear-1"
+    price:
+      description: Timestamp
+      in: path
+      name: price
+      required: true
+      schema:
+        type: string
+        example: "2020-03-14T15:32:52"
   schemas:
     User:
       type: object

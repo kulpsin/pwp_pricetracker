@@ -22,21 +22,21 @@ class PriceCollection(Resource):
         ---
         security: []
         parameters:
-          - name: product
-            in: path
-            required: true
+            - $ref: '#/components/parameters/product'
         responses:
-          200:
+          '200':
             description: A list of prices for the product
             content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Price'
-                example:
-                  - value: 0.72
-                    timestamp: "2020-03-14T15:32:52"
-                  - value: 4.9
-                    timestamp: "2020-03-14T15:32:52"
+                application/json:
+                    schema:
+                        type: array
+                        items:
+                            $ref: '#/components/schemas/Price'
+                    example:
+                        - price: 0.72
+                        timestamp: "2020-03-14T15:32:52"
+                        - price: 4.9
+                        timestamp: "2020-03-14T15:32:52"
         """
         history = []
         for price in product.prices:
@@ -49,7 +49,34 @@ class PriceCollection(Resource):
 
     @auth.require(owner=False)
     def post(self, product):
-        """Post a new snapshot to an existing price history"""
+        """Post a new snapshot to an existing price history
+        ---
+        security:
+        - api_key: []
+        parameters:
+          - $ref: '#/components/parameters/product' 
+        requestBody:
+            required: true
+            content:
+                application/json:
+                schema:
+                    $ref: '#/components/schemas/Price'
+        responses:
+            '201':
+                description: Price created. Check Location header for the URL.
+                headers:
+                    Location:
+                    schema:
+                        type: string
+                        format: uri
+            '400':
+              description: Validation Error, Invalid JSON
+            '409':
+              description: Conflict, IntegrityError in database
+            '415':
+              description: Request type isn't JSON
+
+        """
         if not request.is_json:
             return "Request content type must be JSON", 415
         
@@ -79,13 +106,42 @@ class PriceCollection(Resource):
 class PriceItem(Resource):
     @cache.cached(timeout=3600)
     def get(self, product, price):
-        """Get a particular price from the history at a specific timestamp"""
+        """Get a particular price from the history at a specific timestamp
+        ---
+        parameters:
+          - $ref: '#/components/parameters/product'
+          - $ref: '#/components/parameters/price'
+        responses:
+          '200':
+            description: The price snapshot details
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Price'
+          '404':
+            description: Price or Product not found
+        """
 
         return price.serialize()
 
     @auth.require()
     def delete(self, product, price):
-        """Delete an existing snapshot from the price history"""
+        """
+        ---
+        security:
+            - api_key: []
+        parameters:
+          - $ref: '#/components/parameters/product'
+          - $ref: '#/components/parameters/price'
+        description: Delete an existing snapshot from the price history
+        responses:
+          '204':
+            description: Price deleted successfully
+          '401':
+            description: Authentication required
+          '404':
+            description: Price not found
+        """
 
         db.session.delete(price)
         db.session.commit()

@@ -27,15 +27,26 @@ class ProductCollection(Resource):
     def post(self):
         """Create a new product.
         ---
+        security:
+            - api_key: []
         requestBody:
-          required: true
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
+            required: true
+            content:
+                application/json:
+                schema:
+                    $ref: '#/components/schemas/Product'
         responses:
-          201:
-            description: New product has been created
+            '201':
+                description: New product has been created
+                headers:
+                    Location:
+                        description: URI of the new product
+                        schema:
+                            type: string
+            '400':
+                description: Validation Error
+            '415':
+                description: Content type not JSON
         """
 
         if not request.is_json:
@@ -79,7 +90,7 @@ class ProductCollection(Resource):
         ---
         security: []
         responses:
-          200:
+          '200':
             description: A list of products
             content:
               application/json:
@@ -105,14 +116,48 @@ class ProductItem(Resource):
     @cache.cached(timeout=60)
     def get(self, product):
 
-        """Retrieve a specific product."""
+        """Retrieve a specific product.
+        ---
+        parameters:
+            - $ref: '#/components/parameters/product'
+        responses:
+            '200':
+                description: Product details retrieved
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Product'
+            '404':
+                description: Product not found
+        """
 
         return product.serialize()
 
     @auth.require(owner=True)
     def put(self, product):
 
-        """Update an existing product."""
+        """Update an existing product.
+        ---
+        security:
+            - api_key: []
+        parameters:
+            - $ref: '#/components/parameters/product'
+        requestBody:
+            required: true
+            content:
+                application/json:
+                schema:
+                    $ref: '#/components/schemas/Product'
+        responses:
+            '204':
+                description: Product updated successfully
+            '400':
+                description: Invalid data
+            '404':
+                description: Product not found
+            '415':
+                description: Request content type must be JSON
+        """
         if not request.json:
             return "Request content type must be JSON", 415
 
@@ -133,7 +178,18 @@ class ProductItem(Resource):
     @auth.require(owner=True)
     def delete(self, product):
 
-        """Delete a specific product."""
+        """Delete a specific product.
+        ---
+        security:
+            - api_key: []
+        parameters:
+            - $ref: '#/components/parameters/product'
+        responses:
+            '204':
+                description: Product deleted successfully
+            '404':
+                description: Product not found
+        """
 
         db.session.delete(product)
         db.session.commit()
