@@ -33,8 +33,8 @@ class ProductCollection(Resource):
             required: true
             content:
                 application/json:
-                schema:
-                    $ref: '#/components/schemas/Product'
+                    schema:
+                        $ref: '#/components/schemas/Product'
         responses:
             '201':
                 description: New product has been created
@@ -146,8 +146,8 @@ class ProductItem(Resource):
             required: true
             content:
                 application/json:
-                schema:
-                    $ref: '#/components/schemas/Product'
+                    schema:
+                        $ref: '#/components/schemas/Product'
         responses:
             '204':
                 description: Product updated successfully

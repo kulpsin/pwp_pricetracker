@@ -34,9 +34,9 @@ class PriceCollection(Resource):
                             $ref: '#/components/schemas/Price'
                     example:
                         - price: 0.72
-                        timestamp: "2020-03-14T15:32:52"
+                          timestamp: "2020-03-14T15:32:52"
                         - price: 4.9
-                        timestamp: "2020-03-14T15:32:52"
+                          timestamp: "2020-03-14T15:32:52"
         """
         history = []
         for price in product.prices:
@@ -59,8 +59,8 @@ class PriceCollection(Resource):
             required: true
             content:
                 application/json:
-                schema:
-                    $ref: '#/components/schemas/Price'
+                    schema:
+                        $ref: '#/components/schemas/Price'
         responses:
             '201':
                 description: Price created. Check Location header for the URL.
