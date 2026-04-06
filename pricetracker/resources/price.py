@@ -108,6 +108,7 @@ class PriceItem(Resource):
     def get(self, product, price):
         """Get a particular price from the history at a specific timestamp
         ---
+        security: []
         parameters:
           - $ref: '#/components/parameters/product'
           - $ref: '#/components/parameters/price'
