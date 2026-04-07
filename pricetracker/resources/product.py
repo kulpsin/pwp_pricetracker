@@ -118,6 +118,7 @@ class ProductItem(Resource):
 
         """Retrieve a specific product.
         ---
+        security: []
         parameters:
             - $ref: '#/components/parameters/product'
         responses:
