@@ -29,12 +29,13 @@
 
 
 ## Meeting 3.
-* **DATE:**
-* **PARTICIPANTS:**
-* **TEACHER:**
+* **DATE:** 13.3.2026
+* **PARTICIPANTS:** Miro, Nadira, Jeremias
+* **TEACHER:** Iván
 
 ### Action points
-*List here the actions points discussed with assistants*
+- Code documentation should be improved, particularly for functions that won't be a part of the OpenAPI specification later on.
+- The group really needs to distribute the work more evenly.
 
 ### Notes
 *Add here notes that you consider important. This is not mandatory*
