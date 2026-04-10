@@ -1,6 +1,11 @@
 #!/usr/bin/env sh
+# Initialize the DB and start CMD as myuser
 set -e
 
-flask --app pricetracker init-db
+# Ensure the volume is owned by myuser
+chown -R myuser:myuser /opt/pricetracker/instance
 
-exec "$@"
+# Execute resto of the commands as myuser
+su-exec myuser flask --app pricetracker init-db
+
+exec su-exec myuser "$@"
