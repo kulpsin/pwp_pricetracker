@@ -5,6 +5,7 @@ services:
       - 127.0.0.1:${APP_PORT:?Port must be set in .env}:8000
     volumes:
       - instance-data:/opt/pricetracker/instance
+    restart: unless-stopped
 
 volumes:
   instance-data:
