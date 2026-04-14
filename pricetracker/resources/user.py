@@ -34,9 +34,9 @@ class UserCollection(Resource):
                     X-Api-Key:
                         $ref: '#/components/headers/X-Api-Key'
                     Location:
-                    schema:
-                        type: string
-                        format: uri
+                        schema:
+                            type: string
+                            format: uri
             '400':
                 description: BadRequest - Invalid JSON or Schema
             '409':

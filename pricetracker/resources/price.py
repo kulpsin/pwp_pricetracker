@@ -66,9 +66,9 @@ class PriceCollection(Resource):
                 description: Price created. Check Location header for the URL.
                 headers:
                     Location:
-                    schema:
-                        type: string
-                        format: uri
+                        schema:
+                            type: string
+                            format: uri
             '400':
               description: Validation Error, Invalid JSON
             '409':
