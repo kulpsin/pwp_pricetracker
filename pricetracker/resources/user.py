@@ -7,7 +7,7 @@ import uuid
 from flask import Response, request, url_for
 from flask_restful import Resource
 from jsonschema import ValidationError, validate
-from werkzeug.exceptions import BadRequest, Conflict, NotFound
+from werkzeug.exceptions import BadRequest, Conflict, NotFound, Unauthorized
 from werkzeug.routing import BaseConverter
 from sqlalchemy.exc import IntegrityError
 
@@ -76,26 +76,61 @@ class UserCollection(Resource):
             },
         )
 
-    @auth.require(admin=True)
+    @auth.require(admin=False, owner=False)
     def get(self):
-        """List all users (Admin only)
+        """List or look up users
         ---
         security:
             - api_key: []
+        parameters:
+            - name: email
+              in: query
+              type: string
+              description: Email to look up (regular users can only look up their own email, admins can look up any)
         responses:
             '200':
-                description: List of all users
+                description: List or single user
                 content:
                     application/json:
                         schema:
-                            type: array
-                            items:
-                                $ref: '#/components/schemas/User'
+                            oneOf:
+                                - type: array
+                                  items:
+                                    $ref: '#/components/schemas/User'
+                                - $ref: '#/components/schemas/User'
             '401':
                 description: Authentication required
             '403':
-                description: Admin privileges required
+                description: Access denied
         """
+        email = request.args.get("email")
+        if email:
+            # Require authentication to look up by email
+            if "X-Api-Key" not in request.headers:
+                raise Unauthorized
+            key_hash = models.ApiKey.key_hash(request.headers.get("X-Api-Key").strip())
+            db_key = models.ApiKey.query.where(models.ApiKey.key == key_hash).first()
+            if db_key is None:
+                raise Forbidden
+            current_user = db_key.user
+            # Regular users can only look up their own email
+            if not db_key.admin and current_user.email != email:
+                raise Forbidden
+            user = models.User.query.filter_by(email=email).first()
+            if user is None:
+                return [], 200
+            return [user.serialize()], 200
+
+        # No email param — require admin to list all users
+        if "X-Api-Key" not in request.headers:
+            raise Unauthorized
+        key_hash = models.ApiKey.key_hash(request.headers.get("X-Api-Key").strip())
+        db_key = models.ApiKey.query.where(models.ApiKey.key == key_hash).first()
+        if db_key is None:
+            raise Forbidden
+        if not db_key.admin:
+            raise Forbidden
+
         response_data = []
         users = models.User.query.all()
         for user in users:
@@ -183,6 +218,37 @@ class UserItem(Resource):
         db.session.commit()
 
         return Response(status=204)
+
+
+class UserProducts(Resource):
+
+    @auth.require(owner=True)
+    def get(self, user):
+        """List products for a user
+        ---
+        security:
+            - api_key: []
+        parameters:
+            - $ref: '#/components/parameters/user'
+        responses:
+            '200':
+                description: List of products for the user
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/Product'
+            '401':
+                description: Authentication required
+            '403':
+                description: Access denied
+        """
+        response_data = []
+        products = models.Product.query.filter_by(user_id=user.id).all()
+        for product in products:
+            response_data.append(product.serialize())
+        return response_data, 200
 
 
 class UserConverter(BaseConverter):
