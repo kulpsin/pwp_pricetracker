@@ -1,6 +1,10 @@
 """
 Contains the main logic for fetching a product page, extracting the price using either vision or text analysis with language models, and handling errors and fallbacks between different methods.
 
+Either an OpenRouter API key or an Ollama setup is required to run this code.
+    To use OpenRouter, set your API key in a .env file with the following content: OPENROUTER_API_KEY=your_api_key_here
+    To use Ollama, make sure you have the Ministral-3 model installed locally
+
 Usage:
     python query.py [-M METHOD] [-m MODALITY] URL
 
