@@ -12,4 +12,5 @@ dist
 instance
 pricetracker.egg-info
 .coverage
+debug_screenshot*.png
 
