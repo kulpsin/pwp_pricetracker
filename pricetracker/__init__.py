@@ -73,6 +73,7 @@ def create_app(test_config: dict|None=None) -> Flask:
     app.cli.add_command(cli.remove_test_data)
     app.cli.add_command(cli.add_admin_user)
     app.cli.add_command(cli.add_worker_key)
+    app.cli.add_command(cli.fetch_price_from_llm_command)
 
     # Define URL converters
     from pricetracker.resources.user import UserConverter

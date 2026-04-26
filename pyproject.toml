@@ -9,6 +9,11 @@ dependencies = [
   "flask-caching",
   "flasgger",
   "gunicorn",
+  "python-dotenv",
+  "beautifulsoup4",
+  "playwright",
+  "ollama",
+  "openai",
 ]
 requires-python = ">=3.12"
 authors = [
