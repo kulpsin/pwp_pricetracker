@@ -10,11 +10,6 @@ dependencies = [
   "flask-cors",
   "flasgger",
   "gunicorn",
-  "python-dotenv",
-  "beautifulsoup4",
-  "playwright",
-  "ollama",
-  "openai",
 ]
 requires-python = ">=3.12"
 authors = [
@@ -37,5 +32,11 @@ test = [
   "pytest",
   "pytest-cov"
 ]
-dev = ["pricetracker[lint,test]"]
-
+worker = [
+  "beautifulsoup4",
+  "playwright",
+  "ollama",
+  "openai",
+  "requests",
+]
+dev = ["pricetracker[lint,test,worker]"]

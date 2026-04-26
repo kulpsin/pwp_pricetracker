@@ -410,15 +410,16 @@ class TestPriceUpdateJobItem:
         assert resp.status_code == 200
         job_id = resp.json["id"]
 
-        # Complete it
+        # Complete it with a price
         resp = worker_user['client'].patch(
             f"/api/price-update-jobs/{job_id}/",
-            json={"status": "completed"},
+            json={"status": "completed", "price_value": 49.99},
             headers=worker_user['headers'],
         )
         assert resp.status_code == 200
         assert resp.json["status"] == "completed"
         assert resp.json["completed_at"] is not None
+        assert resp.json["price_value"] == 49.99
 
     def test_patch_fail(self, product_for_queue, worker_user):
         """Worker can mark a job as failed with error message"""

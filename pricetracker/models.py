@@ -217,6 +217,8 @@ class PriceUpdateJob(db.Model):
     started_at = db.Column(db.DateTime, nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True)
     error_message = db.Column(db.String(512), nullable=True)
+    url = db.Column(db.String(512), nullable=True)
+    price_value = db.Column(db.Float, nullable=True)
 
     product = db.relationship("Product", back_populates="update_jobs")
 
@@ -229,6 +231,8 @@ class PriceUpdateJob(db.Model):
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
             "error_message": self.error_message,
+            "url": self.url,
+            "price_value": self.price_value,
         }
 
     @staticmethod
@@ -244,6 +248,9 @@ class PriceUpdateJob(db.Model):
         props["error_message"] = {
             "type": ["string", "null"],
             "maxLength": 512,
+        }
+        props["price_value"] = {
+            "type": ["number", "null"],
         }
         return schema
 

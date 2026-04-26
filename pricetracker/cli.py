@@ -153,44 +153,6 @@ def generate_test_data() -> None:
     print("Created successfully")
 
 
-@click.command("fetch-price-from-llm")
-@click.argument("hruid")
-@with_appcontext
-def fetch_price_from_llm_command(hruid: str) -> None:
-    """
-    Fetch price from LLM for a specific product and store it in the database.
-    
-    This command takes a product's human-readable ID (hruid), fetches its URL,
-    calls the LLM service to extract the current price, and stores it with a timestamp.
-    
-    Args:
-        hruid: The human-readable unique identifier of the product (e.g., 'ps5-1')
-        
-    Example:
-        flask --app pricetracker fetch-price-from-llm ps5-1
-    """
-    from . import utils
-    
-    try:
-        product = Product.query.filter_by(hruid=hruid).first()
-        if not product:
-            raise ValueError(f"Product with hruid '{hruid}' not found")
-        
-        price_obj = utils.get_price_from_llm(hruid)
-        print(f"  Price fetched successfully for product '{product.name}'")
-        print(f"  Product ID: {product.id}")
-        print(f"  URL: {product.url}")
-        print(f"  Price: €{price_obj.value}")
-        print(f"  Timestamp: {price_obj.timestamp.isoformat()}")
-        
-    except ValueError as e:
-        print(f"✗ Error: {str(e)}")
-        raise SystemExit(1) from e
-    except Exception as e:
-        print(f"✗ Unexpected error: {str(e)}")
-        raise SystemExit(1) from e
-
-
 @click.command("enqueue-stale-products")
 @click.option("--hours", "hours_threshold", default=24,
               help="Products with no price older than this many hours will be enqueued")

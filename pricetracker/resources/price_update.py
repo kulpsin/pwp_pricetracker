@@ -57,6 +57,7 @@ class PriceUpdateJobCollection(Resource):
         job = models.PriceUpdateJob(
             product_id=product_id,
             status="pending",
+            url=product.url,
         )
         db.session.add(job)
         db.session.commit()
@@ -243,6 +244,17 @@ class PriceUpdateJobItem(Resource):
         job.completed_at = datetime.now(timezone.utc)
         if "error_message" in request.json:
             job.error_message = request.json["error_message"]
+        if "price_value" in request.json:
+            job.price_value = request.json["price_value"]
+
+        # When completed with a price, store it as a Price record
+        if new_status == "completed" and job.price_value is not None:
+            new_price = models.Price(
+                product_id=job.product_id,
+                value=job.price_value,
+                timestamp=datetime.now(timezone.utc),
+            )
+            db.session.add(new_price)
 
         db.session.commit()
 

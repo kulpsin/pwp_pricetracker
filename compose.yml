@@ -16,5 +16,21 @@ services:
       - 127.0.0.1:${CLIENT_PORT:?Client port missing}:80
     restart: unless-stopped
 
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    environment:
+#      - API_BASE_URL=${API_BASE_URL:-http://app:8000}
+      - API_BASE_URL=http://app:8000
+      - WORKER_API_KEY=${WORKER_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-dummy}
+      - OPENAI_MODEL=${OPENAI_MODEL:-}
+    deploy:
+      replicas: ${WORKER_REPLICAS:-1}
+    restart: unless-stopped
+
 volumes:
   instance-data:

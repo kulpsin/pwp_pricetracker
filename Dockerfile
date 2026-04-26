@@ -11,7 +11,7 @@ RUN apk add --no-cache su-exec
 COPY pyproject.toml .
 COPY pricetracker pricetracker
 
-# Install pricetracker and dependancies
+# Install pricetracker and dependencies
 RUN --mount=type=cache,sharing=locked,target=/root/.cache/pip \
     pip install .
 
@@ -21,6 +21,6 @@ RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 RUN adduser -D myuser
+ENV FLASK_APP=pricetracker
 
 CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:8000", "pricetracker:create_app()"]
-
