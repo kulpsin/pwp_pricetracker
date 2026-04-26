@@ -34,6 +34,7 @@ class Product(db.Model):
 
     user = db.relationship("User", back_populates="products")
     prices = db.relationship("Price", back_populates="product")
+    update_jobs = db.relationship("PriceUpdateJob", back_populates="product")
 
     @staticmethod
     def gen_hruid(text: str) -> str:
@@ -51,6 +52,7 @@ class Product(db.Model):
     def serialize(self) -> dict:
         """Convert the object into a serializable dictionary."""
         doc = {
+            "id": self.id,
             "hruid": self.hruid,
             "user": self.user and str(self.user.uuid),
             "name": self.name,
@@ -199,6 +201,50 @@ class User(db.Model):
             "format": "uuid",
         }
 
+        return schema
+
+
+class PriceUpdateJob(db.Model):
+    """Price update queue job model"""
+    __table_args__ = (
+        db.UniqueConstraint("product_id", "status",
+                            name="uq_product_pending"),
+    )
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id", ondelete="CASCADE"), nullable=False)
+    status = db.Column(db.String(16), nullable=False, default="pending")
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    started_at = db.Column(db.DateTime, nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    error_message = db.Column(db.String(512), nullable=True)
+
+    product = db.relationship("Product", back_populates="update_jobs")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "product_id": self.product_id,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "error_message": self.error_message,
+        }
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+        }
+        props = schema["properties"] = {}
+        props["status"] = {
+            "type": "string",
+            "enum": ["pending", "processing", "completed", "failed"],
+        }
+        props["error_message"] = {
+            "type": ["string", "null"],
+            "maxLength": 512,
+        }
         return schema
 
 

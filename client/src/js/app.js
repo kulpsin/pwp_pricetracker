@@ -1,0 +1,79 @@
+import { isAuthenticated, renderAuthUI, hideAuthOverlay, handleExistingKey, handleCreateUser, handleAnonymous, hideCredentialsModal, copyCredentialField, dismissCredentialsModal, toggleApiKeyVisibility } from "./auth.js";
+import { navigateToProducts } from "./navigation.js";
+import { loadStateFromStorage } from "./state.js";
+
+/**
+ * Sets up event listeners for the authentication UI elements.
+ */
+function setupEventListeners() {
+    const keyInput = document.getElementById("api-key-input");
+    const createEmailInput = document.getElementById("create-email");
+    const authEmailInput = document.getElementById("auth-email-input");
+
+    document.getElementById("auth-submit-key").addEventListener("click", handleExistingKey);
+    document.getElementById("auth-create-user").addEventListener("click", handleCreateUser);
+    document.getElementById("auth-continue-anon").addEventListener("click", handleAnonymous);
+
+    keyInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { handleExistingKey(); }
+    });
+
+    if (authEmailInput) {
+        authEmailInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") { handleExistingKey(); }
+        });
+    }
+
+    createEmailInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { handleCreateUser(); }
+    });
+
+    const credCloseBtn = document.getElementById("cred-close");
+    if (credCloseBtn) {
+        credCloseBtn.addEventListener("click", hideCredentialsModal);
+    }
+
+    const copyButtons = document.querySelectorAll(".cred-copy-btn");
+    for (let i = 0; i < copyButtons.length; i++) {
+        const btn = copyButtons[i];
+        const targetId = btn.getAttribute("data-target");
+        btn.addEventListener("click", () => { copyCredentialField(targetId); });
+    }
+
+    const credDismissBtn = document.getElementById("cred-dismiss");
+    if (credDismissBtn) {
+        credDismissBtn.addEventListener("click", dismissCredentialsModal);
+    }
+
+    const credToggleBtn = document.getElementById("cred-toggle-visibility");
+    if (credToggleBtn) {
+        credToggleBtn.addEventListener("click", toggleApiKeyVisibility);
+    }
+}
+
+/**
+ * Checks authentication status and initializes the app UI accordingly.
+ * If authenticated, hides the auth overlay and navigates to products.
+ * Otherwise, shows the auth overlay for login or registration.
+ */
+function checkAuthAndInit() {
+    const authEmailInput = document.getElementById("auth-email-input");
+
+    if (isAuthenticated()) {
+        hideAuthOverlay();
+        navigateToProducts();
+    } else if (localStorage.getItem("apiKey")) {
+        if (authEmailInput) {
+            authEmailInput.placeholder = "Enter your email to resolve UUID";
+        }
+        renderAuthUI();
+    } else {
+        renderAuthUI();
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadStateFromStorage();
+    setupEventListeners();
+    checkAuthAndInit();
+});

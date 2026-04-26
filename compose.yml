@@ -7,5 +7,14 @@ services:
       - instance-data:/opt/pricetracker/instance
     restart: unless-stopped
 
+  client:
+    build:
+      context: ./client
+      args:
+        API_BASE_URL: ${API_BASE_URL:-http://app:8000}
+    ports:
+      - 127.0.0.1:${CLIENT_PORT:?Client port missing}:80
+    restart: unless-stopped
+
 volumes:
   instance-data:

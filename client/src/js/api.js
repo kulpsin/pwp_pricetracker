@@ -1,0 +1,165 @@
+import { BASE } from "./config.js";
+import { getApiKey } from "./auth.js";
+
+/**
+ * Parses a raw response string or value into a JavaScript object.
+ * @param {string|object|null} result - The raw response text, an object, or null.
+ * @returns {object} The parsed JSON object or an empty object.
+ */
+export function parseResult(result) {
+    if (typeof result === "object") { return result; }
+    if (!result) { return {}; }
+    return JSON.parse(result);
+}
+
+/**
+ * Sends an HTTP request to the API with the given parameters.
+ * @param {string} endpoint - The API endpoint path.
+ * @param {string|null} method - The HTTP method (e.g. "GET", "POST").
+ * @param {object|null} body - The request body object, or null.
+ * @param {object} headers - Additional headers to include in the request.
+ * @returns {Promise<string>} The raw response text.
+ */
+export async function sendRequest(endpoint, method, body, headers) {
+    const headersObj = headers ?? {};
+    let bodyObj = null;
+
+    if (body !== null) {
+        headersObj["Content-Type"] = "application/json";
+        bodyObj = JSON.stringify(body);
+    }
+
+    const init = {
+        headers: headersObj,
+    };
+
+    if (bodyObj !== null) {
+        init.body = bodyObj;
+    }
+
+    if (method !== null) {
+        init.method = method;
+    }
+
+    const response = await fetch(BASE + endpoint, init);
+    const content = await response.text();
+
+    if (!response.ok) {
+        throw new Error("HTTP " + response.status + ": " + content);
+    }
+
+    return content;
+}
+
+/**
+ * Fetches the full list of products from the API.
+ * @returns {Promise<object>} The parsed product list response.
+ */
+export async function listProducts() {
+    const result = await sendRequest("/api/products/", "GET", null, {});
+    return parseResult(result);
+}
+
+/**
+ * Fetches a single product by its human-readable UID.
+ * @param {string} hruid - The product's human-readable UID.
+ * @returns {Promise<object>} The parsed product object.
+ */
+export async function getProduct(hruid) {
+    const result = await sendRequest("/api/products/" + hruid + "/", "GET", null, {});
+    return parseResult(result);
+}
+
+/**
+ * Creates a new product via the API.
+ * @param {object} productData - The product data to create (name, url, notes).
+ * @returns {Promise<object>} The parsed response containing the created product.
+ */
+export async function createProduct(productData) {
+    const result = await sendRequest("/api/products/", "POST", productData, {
+        "X-Api-Key": getApiKey(),
+    });
+    return parseResult(result);
+}
+
+/**
+ * Deletes a product by its human-readable UID.
+ * @param {string} hruid - The product's human-readable UID.
+ * @returns {Promise<void>}
+ */
+export async function deleteProduct(hruid) {
+    await sendRequest("/api/products/" + hruid + "/", "DELETE", null, {
+        "X-Api-Key": getApiKey(),
+    });
+}
+
+/**
+ * Fetches all price entries for a product.
+ * @param {string} hruid - The product's human-readable UID.
+ * @returns {Promise<object>} The parsed list of price entries.
+ */
+export async function listPrices(hruid) {
+    const result = await sendRequest("/api/products/" + hruid + "/prices/", "GET", null, {});
+    return parseResult(result);
+}
+
+/**
+ * Creates a new price entry for a product.
+ * @param {string} hruid - The product's human-readable UID.
+ * @param {object} priceData - The price data (value, timestamp).
+ * @returns {Promise<object>} The parsed response containing the created price.
+ */
+export async function createPrice(hruid, priceData) {
+    const result = await sendRequest("/api/products/" + hruid + "/prices/", "POST", priceData, {
+        "X-Api-Key": getApiKey(),
+    });
+    return parseResult(result);
+}
+
+/**
+ * Deletes a price entry for a product.
+ * @param {string} hruid - The product's human-readable UID.
+ * @param {string} timestamp - The ISO timestamp of the price to delete.
+ * @returns {Promise<void>}
+ */
+export async function deletePrice(hruid, timestamp) {
+    await sendRequest("/api/products/" + hruid + "/prices/" + timestamp + "/", "DELETE", null, {
+        "X-Api-Key": getApiKey(),
+    });
+}
+
+/**
+ * Looks up a user by email address.
+ * @param {string} email - The email address to look up.
+ * @returns {Promise<object>} The parsed list of matching user objects.
+ */
+export async function lookupUserByEmail(email) {
+    const result = await sendRequest("/api/users/?email=" + encodeURIComponent(email), "GET", null, {
+        "X-Api-Key": getApiKey(),
+    });
+    return parseResult(result);
+}
+
+/**
+ * Fetches all products owned by a user.
+ * @param {string} uuid - The user's UUID.
+ * @returns {Promise<object>} The parsed list of user's products.
+ */
+export async function listUserProducts(uuid) {
+    const result = await sendRequest("/api/users/" + uuid + "/products/", "GET", null, {
+        "X-Api-Key": getApiKey(),
+    });
+    return parseResult(result);
+}
+
+/**
+ * Enqueues a price update job for a product.
+ * @param {string} hruid - The product's human-readable unique identifier.
+ * @returns {Promise<object>} The parsed response containing the created job.
+ */
+export async function enqueuePriceUpdate(hruid) {
+    const result = await sendRequest(`/api/products/${hruid}/update-jobs/`, "POST", {}, {
+        "X-Api-Key": getApiKey(),
+    });
+    return parseResult(result);
+}

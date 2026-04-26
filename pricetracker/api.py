@@ -8,6 +8,12 @@ from flask_restful import Api
 from .resources.user import UserCollection, UserItem, UserProducts
 from .resources.product import ProductCollection, ProductItem
 from .resources.price import PriceCollection, PriceItem
+from .resources.price_update import (
+    PriceUpdateJobCollection,
+    PriceUpdateJobClaim,
+    PriceUpdateJobList,
+    PriceUpdateJobItem,
+)
 
 api_bp =  Blueprint("api", __name__)
 api = Api(api_bp)
@@ -19,6 +25,10 @@ api.add_resource(ProductCollection, "/products/")
 api.add_resource(ProductItem, "/products/<product:product>/")
 api.add_resource(PriceCollection, "/products/<product:product>/prices/")
 api.add_resource(PriceItem, "/products/<product:product>/prices/<price:price>/")
+api.add_resource(PriceUpdateJobCollection, "/products/<product:product>/update-jobs/")
+api.add_resource(PriceUpdateJobClaim, "/price-update-jobs/claim/")
+api.add_resource(PriceUpdateJobList, "/price-update-jobs/")
+api.add_resource(PriceUpdateJobItem, "/price-update-jobs/<int:job_id>/")
 
 @api_bp.route('/hello')
 def hello():  # pragma: no cover

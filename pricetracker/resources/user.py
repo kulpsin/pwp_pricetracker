@@ -7,10 +7,9 @@ import uuid
 from flask import Response, request, url_for
 from flask_restful import Resource
 from jsonschema import ValidationError, validate
-from werkzeug.exceptions import BadRequest, Conflict, NotFound, Unauthorized
+from werkzeug.exceptions import BadRequest, Conflict, NotFound, Unauthorized, Forbidden
 from werkzeug.routing import BaseConverter
 from sqlalchemy.exc import IntegrityError
-
 from .. import models
 from ..db import db
 from .. import auth

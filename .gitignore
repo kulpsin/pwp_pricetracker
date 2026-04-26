@@ -14,3 +14,11 @@ pricetracker.egg-info
 .coverage
 debug_screenshot*.png
 
+# JS
+**/node_modules
+
+
+# Agentic Coding
+.devcontainer
+.opencode
+AGENTS.md

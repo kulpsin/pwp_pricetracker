@@ -1,0 +1,718 @@
+/* ============================================================
+   Design Tokens
+   ============================================================ */
+
+:root {
+    /* Primary / accent */
+    --color-primary: #4a90d9;
+    --color-primary-hover: #3a7bc8;
+    --color-primary-light: rgba(74, 144, 217, 0.2);
+
+    /* Success */
+    --color-success: #2ecc71;
+    --color-success-hover: #27ae60;
+    --color-success-bg: #d4edda;
+    --color-success-text: #155724;
+
+    /* Danger */
+    --color-danger: #e74c3c;
+    --color-danger-hover: #c0392b;
+    --color-danger-bg: #f8d7da;
+    --color-danger-text: #721c24;
+
+    /* Neutral surface/background */
+    --color-bg: #f5f5f5;
+    --color-surface: #ffffff;
+    --color-surface-hover: #fafafa;
+    --color-border: #e0e0e0;
+    --color-border-light: #eee;
+
+    /* Neutral text */
+    --color-text: #333333;
+    --color-text-secondary: #555555;
+    --color-text-muted: #888888;
+    --color-text-faint: #999999;
+    --color-input-border: #cccccc;
+    --color-input-bg: #f9f9f9;
+    --color-link: #4a90d9;
+    --color-divider: #dddddd;
+    --color-overlay: rgba(0, 0, 0, 0.5);
+    --color-shadow: rgba(0, 0, 0, 0.2);
+    --color-shadow-sm: rgba(0, 0, 0, 0.08);
+
+    /* Neutral buttons */
+    --color-btn-default-bg: #ffffff;
+    --color-btn-default-hover: #f0f0f0;
+    --color-btn-default-border: #cccccc;
+    --color-btn-default-text: #333333;
+    --color-btn-secondary-bg: #eeeeee;
+    --color-btn-secondary-hover: #dddddd;
+    --color-btn-secondary-text: #555555;
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 20px;
+    --space-2xl: 24px;
+    --space-3xl: 32px;
+    --space-4xl: 40px;
+    --space-5xl: 60px;
+
+    /* Radius */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-full: 12px;
+}
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+/* ============================================================
+   Auth Panel
+   ============================================================ */
+
+#auth-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-overlay);
+    z-index: 1000;
+}
+
+#auth-panel {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4xl);
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 4px 24px var(--color-shadow);
+}
+
+#auth-panel h1 {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+    font-size: 1.5rem;
+}
+
+#auth-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.auth-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.auth-section h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.auth-section input {
+    padding: 10px 12px;
+    border: 1px solid var(--color-input-border);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+}
+
+.auth-section input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.auth-section button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+#auth-submit-key {
+    background: var(--color-primary);
+    color: var(--color-surface);
+}
+
+#auth-create-user {
+    background: var(--color-success);
+    color: var(--color-surface);
+}
+
+#auth-continue-anon {
+    background: var(--color-btn-secondary-bg);
+    color: var(--color-btn-secondary-text);
+}
+
+#auth-submit-key:hover {
+    background: var(--color-primary-hover);
+}
+
+#auth-create-user:hover {
+    background: var(--color-success-hover);
+}
+
+#auth-continue-anon:hover {
+    background: var(--color-btn-secondary-hover);
+}
+
+.auth-divider {
+    text-align: center;
+    color: var(--color-text-faint);
+    font-size: 0.85rem;
+    position: relative;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    display: inline-block;
+    width: 30%;
+    height: 1px;
+    background: var(--color-divider);
+    vertical-align: middle;
+    margin: 0 8px;
+}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+
+main {
+    display: flex;
+    min-height: 100vh;
+}
+
+#sidebar {
+    width: 220px;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    padding: var(--space-lg);
+}
+
+#workspace {
+    flex: 1;
+    padding: var(--space-2xl);
+    max-width: 900px;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+
+.btn {
+    padding: 8px 16px;
+    border: 1px solid var(--color-btn-default-border);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 500;
+    background: var(--color-btn-default-bg);
+    color: var(--color-btn-default-text);
+}
+
+.btn:hover {
+    background: var(--color-btn-default-hover);
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: var(--color-surface);
+    border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: var(--color-surface);
+    border-color: var(--color-danger);
+}
+
+.btn-danger:hover {
+    background: var(--color-danger-hover);
+}
+
+.btn-small {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================================
+   List Header
+   ============================================================ */
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+}
+
+.list-header h2 {
+    font-size: 1.3rem;
+}
+
+.list-header .btn {
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   Product List / Cards
+   ============================================================ */
+
+.product-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.product-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    transition: box-shadow 0.15s;
+}
+
+.product-card:hover {
+    box-shadow: 0 2px 8px var(--color-shadow-sm);
+}
+
+.product-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
+.product-name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.product-name a {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.product-name a:hover {
+    color: var(--color-link);
+}
+
+.product-price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.trend-arrow {
+    font-size: 1rem;
+}
+
+.product-url {
+    display: block;
+    color: var(--color-link);
+    font-size: 0.85rem;
+    text-decoration: none;
+    margin-bottom: var(--space-md);
+}
+
+.product-url:hover {
+    text-decoration: underline;
+}
+
+.product-card .btn {
+    margin-top: var(--space-sm);
+}
+
+/* ============================================================
+   Status Badge
+   ============================================================ */
+
+.status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.active {
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+}
+
+.status-badge.inactive {
+    background: var(--color-danger-bg);
+    color: var(--color-danger-text);
+}
+
+/* ============================================================
+   Empty State
+   ============================================================ */
+
+.empty-state {
+    text-align: center;
+    padding: var(--space-5xl) var(--space-xl);
+}
+
+.empty-state h2 {
+    margin-bottom: var(--space-xs);
+    color: var(--color-text-secondary);
+}
+
+.empty-state p {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xl);
+}
+
+/* ============================================================
+   Inline Forms
+   ============================================================ */
+
+.inline-form {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-xl);
+    margin-top: var(--space-md);
+}
+
+.inline-form h3 {
+    margin-bottom: var(--space-md);
+    font-size: 1rem;
+}
+
+.inline-form input {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--color-input-border);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    margin-bottom: var(--space-md);
+}
+
+.inline-form input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.inline-form .btn {
+    margin-right: var(--space-sm);
+    margin-top: var(--space-xs);
+}
+
+/* ============================================================
+   Product Detail
+   ============================================================ */
+
+.product-detail {
+    margin-bottom: var(--space-xl);
+}
+
+.product-detail h2 {
+    margin-bottom: var(--space-sm);
+    font-size: 1.4rem;
+}
+
+.product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: var(--space-md);
+}
+
+.product-info a {
+    color: var(--color-link);
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.product-info a:hover {
+    text-decoration: underline;
+}
+
+.product-hruid {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.product-actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+}
+
+/* ============================================================
+   Price Table
+   ============================================================ */
+
+.price-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.price-table th,
+.price-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.price-table thead {
+    background: var(--color-surface-hover);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+.price-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.price-table tbody tr:hover {
+    background: var(--color-surface-hover);
+}
+
+.price-table td:last-child {
+    text-align: right;
+    width: 80px;
+}
+
+/* ============================================================
+   Chart Container
+   ============================================================ */
+
+.chart-container {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg) var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+.chart-container h3 {
+    margin-bottom: var(--space-md);
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+}
+
+.chart-container canvas {
+    max-height: 300px;
+}
+
+/* ============================================================
+   Loading
+   ============================================================ */
+
+.loading {
+    text-align: center;
+    padding: var(--space-4xl);
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+}
+
+/* ============================================================
+   Credentials Modal
+   ============================================================ */
+
+#credentials-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-overlay);
+    z-index: 1001;
+}
+
+.credentials-panel {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3xl) var(--space-4xl);
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 4px 24px var(--color-shadow);
+    position: relative;
+}
+
+.credentials-panel h2 {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+}
+
+.cred-subtitle {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xl);
+}
+
+.cred-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text-faint);
+    padding: 4px 8px;
+    line-height: 1;
+}
+
+.cred-close-btn:hover {
+    color: var(--color-text);
+}
+
+.cred-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-md);
+}
+
+.cred-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+}
+
+.cred-input-wrap {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.cred-input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--color-input-border);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    color: var(--color-text);
+    background: var(--color-input-bg);
+}
+
+.cred-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.cred-copy-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border: 1px solid var(--color-btn-default-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-btn-default-bg);
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.cred-copy-btn:hover {
+    background: var(--color-btn-default-hover);
+}
+
+#cred-copy-all {
+    margin-top: var(--space-xs);
+}
+
+.cred-feedback {
+    display: none;
+    font-size: 0.85rem;
+    color: var(--color-success);
+    margin-left: 10px;
+    font-weight: 500;
+}
+
+.cred-warning {
+    font-size: 0.85rem;
+    color: var(--color-danger-text);
+    background: var(--color-danger-bg);
+    border: 1px solid var(--color-danger);
+    border-radius: var(--radius-sm);
+    padding: var(--space-md) var(--space-lg);
+    margin: var(--space-md) 0 var(--space-lg) 0;
+    line-height: 1.4;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 600px) {
+    #workspace {
+        padding: var(--space-lg);
+    }
+
+    .product-card-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .list-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-md);
+    }
+
+    .product-actions {
+        flex-direction: column;
+    }
+
+    .inline-form .btn {
+        display: block;
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+}

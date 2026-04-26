@@ -13,7 +13,7 @@ from flask.cli import with_appcontext
 from sqlalchemy import exc
 
 from .db import db
-from .models import User, Product, Price, ApiKey
+from .models import User, Product, Price, ApiKey, PriceUpdateJob
 
 sys.tracebacklimit = 0
 
@@ -189,3 +189,46 @@ def fetch_price_from_llm_command(hruid: str) -> None:
     except Exception as e:
         print(f"✗ Unexpected error: {str(e)}")
         raise SystemExit(1) from e
+
+
+@click.command("enqueue-stale-products")
+@click.option("--hours", "hours_threshold", default=24,
+              help="Products with no price older than this many hours will be enqueued")
+@with_appcontext
+def enqueue_stale_products(hours_threshold: int) -> None:
+    """Enqueue price update jobs for products with stale price data.
+    Skips products that already have a pending or processing job."""
+    cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=hours_threshold)
+
+    # Find active products with no price since the cutoff
+    stale_products = Product.query.filter(
+        Product.active == True,
+        db.or_(
+            Product.prices.any(),
+        ),
+    ).all()
+
+    enqueued = 0
+    for product in stale_products:
+        latest_price = product.prices.order_by(Price.timestamp.desc()).first()
+        if latest_price is None or latest_price.timestamp < cutoff:
+            # Check if there's already a pending/processing job for this product
+            existing = PriceUpdateJob.query.filter_by(
+                product_id=product.id,
+                status="pending",
+            ).first()
+            if existing is None:
+                existing = PriceUpdateJob.query.filter_by(
+                    product_id=product.id,
+                    status="processing",
+                ).first()
+            if existing is None:
+                job = PriceUpdateJob(
+                    product_id=product.id,
+                    status="pending",
+                )
+                db.session.add(job)
+                enqueued += 1
+
+    db.session.commit()
+    print(f"Enqueued {enqueued} stale products for price update")

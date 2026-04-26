@@ -83,6 +83,34 @@ components:
           type: string
           format: date-time
           example: "2020-03-14T15:32:52"
+    PriceUpdateJob:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product_id:
+          type: integer
+          readOnly: true
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+          example: pending
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+        error_message:
+          type: ["string", "null"]
+          maxLength: 512
   headers:
     X-Api-Key:
       description: Api key used for authorization

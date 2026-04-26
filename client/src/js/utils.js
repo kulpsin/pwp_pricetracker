@@ -1,0 +1,76 @@
+/**
+ * Formats a numeric price value as a Euro string with 2 decimal places.
+ * @param {number} value - The price value to format.
+ * @returns {string} The formatted price string prefixed with the Euro symbol.
+ */
+export function formatPrice(value) {
+    return "\u20AC" + Number(value).toFixed(2);
+}
+
+/**
+ * Formats an ISO timestamp string into a locale-aware date/time string.
+ * @param {string} ts - The ISO timestamp string to format.
+ * @returns {string} The locale-formatted date/time string.
+ */
+export function formatTimestamp(ts) {
+    const d = new Date(ts);
+    return d.toLocaleString();
+}
+
+/**
+ * Truncates a URL string to a maximum length, appending "..." if truncated.
+ * @param {string} url - The URL to truncate.
+ * @param {number} maxLen - The maximum length before truncation.
+ * @returns {string} The truncated URL or the original if within max length.
+ */
+export function truncateUrl(url, maxLen) {
+    if (!url || url.length <= maxLen) { return url; }
+    return url.substring(0, maxLen) + "...";
+}
+
+/**
+ * Determines the trend direction arrow based on the last two prices.
+ * @param {Array<{price: number, timestamp: string}>} prices - Array of price objects.
+ * @returns {string} A down arrow, up arrow, or right arrow character.
+ */
+export function getTrendArrow(prices) {
+    if (!prices || prices.length < 2) { return ""; }
+    const sorted = prices.slice().sort((a, b) => {
+        return new Date(a.timestamp) - new Date(b.timestamp);
+    });
+    const prev = sorted[sorted.length - 2].price;
+    const curr = sorted[sorted.length - 1].price;
+    if (curr < prev) { return "\u2193"; }
+    if (curr > prev) { return "\u2191"; }
+    return "\u2192";
+}
+
+/**
+ * Determines the trend direction color based on the last two prices.
+ * @param {Array<{price: number, timestamp: string}>} prices - Array of price objects.
+ * @returns {string} A CSS color hex code (green, red, or gray).
+ */
+export function getTrendColor(prices) {
+    if (!prices || prices.length < 2) { return "#666"; }
+    const sorted = prices.slice().sort((a, b) => {
+        return new Date(a.timestamp) - new Date(b.timestamp);
+    });
+    const prev = sorted[sorted.length - 2].price;
+    const curr = sorted[sorted.length - 1].price;
+    if (curr < prev) { return "#2ecc71"; }
+    if (curr > prev) { return "#e74c3c"; }
+    return "#666";
+}
+
+/**
+ * Returns the most recent price object from a sorted price list.
+ * @param {Array<{price: number, timestamp: string}>} prices - Array of price objects.
+ * @returns {{price: number, timestamp: string}|null} The latest price object, or null.
+ */
+export function getLatestPrice(prices) {
+    if (!prices || prices.length === 0) { return null; }
+    const sorted = prices.slice().sort((a, b) => {
+        return new Date(a.timestamp) - new Date(b.timestamp);
+    });
+    return sorted[sorted.length - 1];
+}
