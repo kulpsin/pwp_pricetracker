@@ -1,0 +1,46 @@
+import { isAuthenticated } from "./auth.js";
+import { getState } from "./state.js";
+import { navigateToView } from "./navigation.js";
+
+/**
+ * Renders the sidebar navigation with "All Products" and "My Products" buttons.
+ */
+export function renderSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    if (!sidebar) { return; }
+
+    sidebar.innerHTML = "";
+
+    const nav = document.createElement("div");
+    nav.className = "sidebar-nav";
+
+    const allBtn = document.createElement("button");
+    allBtn.className = "sidebar-link";
+    allBtn.textContent = "All Products";
+    allBtn.addEventListener("click", () => navigateToView("all"));
+    nav.appendChild(allBtn);
+
+    const myBtn = document.createElement("button");
+    myBtn.className = "sidebar-link";
+    myBtn.textContent = "My Products";
+    if (!isAuthenticated()) {
+        myBtn.disabled = true;
+        myBtn.classList.add("disabled");
+    } else {
+        myBtn.addEventListener("click", () => navigateToView("mine"));
+    }
+    nav.appendChild(myBtn);
+
+    const { productListView } = getState();
+    const activeLink = nav.querySelector(".sidebar-link");
+    const allLink = nav.children[0];
+    const myLink = nav.children[1];
+
+    if (productListView === "all") {
+        allLink.classList.add("active");
+    } else {
+        myLink.classList.add("active");
+    }
+
+    sidebar.appendChild(nav);
+}

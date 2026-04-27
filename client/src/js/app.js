@@ -1,6 +1,7 @@
 import { isAuthenticated, renderAuthUI, hideAuthOverlay, handleExistingKey, handleCreateUser, handleAnonymous, hideCredentialsModal, copyCredentialField, dismissCredentialsModal, toggleApiKeyVisibility } from "./auth.js";
 import { navigateToProducts } from "./navigation.js";
 import { loadStateFromStorage } from "./state.js";
+import { renderSidebar } from "./sidebar.js";
 
 /**
  * Sets up event listeners for the authentication UI elements.
@@ -68,7 +69,8 @@ function checkAuthAndInit() {
         }
         renderAuthUI();
     } else {
-        renderAuthUI();
+        hideAuthOverlay();
+        navigateToProducts();
     }
 }
 

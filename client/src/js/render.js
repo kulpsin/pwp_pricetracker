@@ -1,10 +1,11 @@
 /* eslint-disable no-console */
 import { isAuthenticated, getUserUuid, showCredentialsModal } from "./auth.js";
 import { getState, setState } from "./state.js";
-import { navigateToProducts, navigateToProduct } from "./navigation.js";
+import { navigateToProducts, navigateToProduct, navigateToView } from "./navigation.js";
 import { listUserProducts, listProducts, getProduct, createProduct, deleteProduct, createPrice, deletePrice, listPrices, enqueuePriceUpdate } from "./api.js";
 import { formatPrice, formatTimestamp, truncateUrl, getTrendArrow, getTrendColor, getLatestPrice } from "./utils.js";
 import { renderPriceChart } from "./graph.js";
+import { renderSidebar } from "./sidebar.js";
 
 const workspace = document.getElementById("workspace");
 
@@ -51,19 +52,36 @@ export function renderNoProducts() {
 }
 
 /**
+ * Renders a message when "My Products" is requested but user is not authenticated.
+ */
+export function renderMineRequiresAuth() {
+    workspace.innerHTML = "";
+
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+
+    const title = document.createElement("h2");
+    title.textContent = "Sign in to view your products";
+    empty.appendChild(title);
+
+    workspace.appendChild(empty);
+}
+
+/**
  * Renders the product list view with cards showing name, price, and trend.
  * @param {Array<object>} products - The list of product objects.
  * @param {object} pricesMap - A map of hruid to price arrays.
  * @param {boolean} loading - Whether data is still being fetched.
+ * @param {string} view - The product list filter: "all" or "mine".
  */
-export function renderProductList(products, pricesMap, loading) {
+export function renderProductList(products, pricesMap, loading, view) {
     workspace.innerHTML = "";
 
     const header = document.createElement("div");
     header.className = "list-header";
 
     const title = document.createElement("h2");
-    title.textContent = "Products";
+    title.textContent = view === "mine" ? "My Products" : "All Products";
     header.appendChild(title);
 
     if (isAuthenticated()) {
@@ -501,7 +519,9 @@ export function renderAddPriceForm(hruid) {
  * @returns {Promise<void>}
  */
 export async function renderWorkspace() {
-    const { currentView, currentProduct, showAddProductForm } = getState();
+    const { currentView, currentProduct, showAddProductForm, productListView } = getState();
+
+    renderSidebar();
 
     if (currentView === "productDetail") {
         if (!currentProduct) {
@@ -529,13 +549,17 @@ export async function renderWorkspace() {
         return;
     }
 
-    // Default: product list view
+    // Product list view
     let products = [];
     const pricesMap = {};
     let loading = true;
 
     try {
-        if (isAuthenticated()) {
+        if (productListView === "mine") {
+            if (!isAuthenticated()) {
+                renderMineRequiresAuth();
+                return;
+            }
             const productsData = await listUserProducts(getUserUuid());
             products = productsData;
         } else {
@@ -565,7 +589,7 @@ export async function renderWorkspace() {
         loading = false;
     }
 
-    renderProductList(products, pricesMap, loading);
+    renderProductList(products, pricesMap, loading, productListView);
 
     if (showAddProductForm && isAuthenticated()) {
         renderAddProductForm();

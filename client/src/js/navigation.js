@@ -3,14 +3,33 @@ import { renderWorkspace } from "./render.js";
 
 /**
  * Navigates to the products list view, clearing the current product selection.
+ * @param {string} [view] - Optional product list filter: "all" or "mine".
  */
-export function navigateToProducts() {
+export function navigateToProducts(view) {
+    const partial = {
+        currentView: "products",
+        currentProduct: null,
+        showAddProductForm: false,
+        showAddPriceForm: false,
+    };
+    if (view) { partial.productListView = view; }
+    setState(partial);
+    renderWorkspace();
+}
+
+/**
+ * Navigates to a specific product list filter view.
+ * @param {string} view - The product list filter: "all" or "mine".
+ */
+export function navigateToView(view) {
     setState({
         currentView: "products",
         currentProduct: null,
         showAddProductForm: false,
         showAddPriceForm: false,
+        productListView: view,
     });
+    localStorage.setItem("productListView", view);
     renderWorkspace();
 }
 
