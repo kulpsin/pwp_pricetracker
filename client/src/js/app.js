@@ -69,8 +69,7 @@ function checkAuthAndInit() {
         }
         renderAuthUI();
     } else {
-        hideAuthOverlay();
-        navigateToProducts();
+        renderAuthUI();
     }
 }
 
