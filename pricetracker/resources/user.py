@@ -262,4 +262,4 @@ class UserConverter(BaseConverter):
         return db_product
 
     def to_url(self, value):
-        return str(value.uuid)
+        return str(value.uuid) if value.uuid else ""

@@ -176,8 +176,8 @@ class User(db.Model):
 
     def serialize(self):
         return {
-            "uuid" : str(self.uuid),
-            "email" : self.email
+            "uuid": self.uuid and str(self.uuid),
+            "email": self.email
         }
 
     def deserialize(self, doc):
@@ -202,6 +202,13 @@ class User(db.Model):
         }
 
         return schema
+
+
+@event.listens_for(User, "before_insert", propagate=True)
+def generate_user_uuid(mapper, connection, target):  # pylint: disable=W0613 (unused-argument)
+    """Auto-generate UUID for new users that don't have one."""
+    if target.uuid is None:
+        target.uuid = uuid.uuid4()
 
 
 class PriceUpdateJob(db.Model):
