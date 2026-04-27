@@ -216,14 +216,11 @@ def load_user_uuid(instance, context):  # pylint: disable=W0613 (unused-argument
     """Fill in NULL uuid for users loaded from DB without one."""
     if instance.uuid is None:
         instance.uuid = uuid.uuid4()
+        db.session.commit()
 
 
 class PriceUpdateJob(db.Model):
     """Price update queue job model"""
-    __table_args__ = (
-        db.UniqueConstraint("product_id", "status",
-                            name="uq_product_pending"),
-    )
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey("product.id", ondelete="CASCADE"), nullable=False)
     status = db.Column(db.String(16), nullable=False, default="pending")

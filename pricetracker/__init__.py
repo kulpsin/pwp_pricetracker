@@ -79,6 +79,7 @@ def create_app(test_config: dict|None=None) -> Flask:
     app.cli.add_command(cli.add_admin_user)
     app.cli.add_command(cli.add_worker_key)
     app.cli.add_command(cli.enqueue_stale_products)
+    app.cli.add_command(cli.migrate)
 
     # Define URL converters
     from pricetracker.resources.user import UserConverter

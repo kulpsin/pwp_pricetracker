@@ -14,6 +14,7 @@ from sqlalchemy import exc
 
 from .db import db
 from .models import User, Product, Price, ApiKey, PriceUpdateJob
+from sqlalchemy import inspect, text
 
 sys.tracebacklimit = 0
 
@@ -194,3 +195,44 @@ def enqueue_stale_products(hours_threshold: int) -> None:
 
     db.session.commit()
     print(f"Enqueued {enqueued} stale products for price update")
+
+
+@click.command("migrate")
+@with_appcontext
+def migrate() -> None:
+    """Run database migrations."""
+    import sqlite3
+    conn = sqlite3.connect(db.engine.url.render_as_string(hide_password=False).replace("sqlite:///", ""))
+    indexes = conn.execute("PRAGMA index_list(price_update_job)").fetchall()
+    dropped = False
+    for idx in indexes:
+        idx_name = idx[1]
+        if idx_name.startswith("sqlite_autoindex_price_update_job"):
+            # Recreate the table without the unique constraint
+            rows = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='price_update_job'").fetchone()
+            old_sql = rows[0]
+            # Remove the CONSTRAINT uq_product_pending UNIQUE (product_id, status) part
+            new_sql = old_sql.replace(", \n\tCONSTRAINT uq_product_pending UNIQUE (product_id, status)", "")
+            new_sql = new_sql.replace(", \n  CONSTRAINT uq_product_pending UNIQUE (product_id, status)", "")
+            new_sql = new_sql.replace(",\n\tCONSTRAINT uq_product_pending UNIQUE (product_id, status)", "")
+            new_sql = new_sql.replace(",\n  CONSTRAINT uq_product_pending UNIQUE (product_id, status)", "")
+            # Also handle single-line variants
+            new_sql = new_sql.replace(", CONSTRAINT uq_product_pending UNIQUE (product_id, status)", "")
+            new_sql = new_sql.replace("CONSTRAINT uq_product_pending UNIQUE (product_id, status)\n)", ")")
+            new_sql = new_sql.replace("CONSTRAINT uq_product_pending UNIQUE (product_id, status))", ")")
+
+            # Rename old table, create new, copy data
+            conn.execute("ALTER TABLE price_update_job RENAME TO price_update_job_old")
+            conn.execute(new_sql)
+            conn.execute("""
+                INSERT INTO price_update_job
+                SELECT * FROM price_update_job_old
+            """)
+            conn.execute("DROP TABLE price_update_job_old")
+            conn.commit()
+            print("Dropped unique constraint from price_update_job")
+            dropped = True
+            break
+    conn.close()
+    if not dropped:
+        print("No migration needed — no conflicting unique constraint found")

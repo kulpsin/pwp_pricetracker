@@ -240,6 +240,9 @@ class PriceUpdateJobItem(Resource):
         if new_status not in ("completed", "failed"):
             raise BadRequest("Status must be 'completed' or 'failed'")
 
+        if job.status == new_status:
+            return job.serialize(), 200
+
         job.status = new_status
         job.completed_at = datetime.now(timezone.utc)
         if "error_message" in request.json:
