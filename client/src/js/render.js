@@ -1,11 +1,12 @@
 /* eslint-disable no-console */
 import { isAuthenticated, getUserUuid, showCredentialsModal } from "./auth.js";
-import { getState, setState } from "./state.js";
+import { getState, productListView, setState } from "./state.js";
 import { navigateToProducts, navigateToProduct, navigateToView } from "./navigation.js";
 import { listUserProducts, listProducts, getProduct, createProduct, deleteProduct, createPrice, deletePrice, listPrices, enqueuePriceUpdate } from "./api.js";
 import { formatPrice, formatTimestamp, truncateUrl, getTrendArrow, getTrendColor, getLatestPrice } from "./utils.js";
 import { renderPriceChart } from "./graph.js";
 import { renderSidebar } from "./sidebar.js";
+import { showToast } from "./toast.js";
 
 const workspace = document.getElementById("workspace");
 
@@ -178,7 +179,7 @@ export function renderProductList(products, pricesMap, loading, view) {
             card.appendChild(urlDiv);
         }
 
-        if (isAuthenticated()) {
+        if (isAuthenticated() && productListView === "mine") {
             const deleteBtn = document.createElement("button");
             deleteBtn.className = "btn btn-danger";
             deleteBtn.textContent = "Delete";
@@ -188,7 +189,7 @@ export function renderProductList(products, pricesMap, loading, view) {
                 deleteProduct(product.hruid).then(() => {
                     navigateToProducts();
                 }).catch((err) => {
-                    alert("Error deleting product: " + err.message);
+                    showToast("Error deleting product: " + err.message, "error");
                 });
             });
             card.appendChild(deleteBtn);
@@ -238,7 +239,7 @@ export function renderAddProductForm() {
         const notes = notesInput.value.trim();
 
         if (!name || !url) {
-            alert("Name and URL are required.");
+             showToast("Name and URL are required.", "error");
             return;
         }
 
@@ -249,7 +250,7 @@ export function renderAddProductForm() {
             setState({ showAddProductForm: false });
             navigateToProducts();
         }).catch((err) => {
-            alert("Error creating product: " + err.message);
+            showToast("Error creating product: " + err.message, "error");
         });
     });
     form.appendChild(submitBtn);
@@ -335,9 +336,9 @@ export function renderProductDetail(prices, loading, product) {
         enqueueBtn.addEventListener("click", () => {
             if (!confirm("Enqueue a price update for \"" + product.name + "\"?")) { return; }
             enqueuePriceUpdate(product.hruid).then(() => {
-                alert("Price update job enqueued successfully.");
+                showToast("Price update job enqueued successfully.", "success");
             }).catch((err) => {
-                alert("Error enqueuing price update: " + err.message);
+                showToast("Error enqueuing price update: " + err.message, "error");
             });
         });
         actions.appendChild(enqueueBtn);
@@ -350,7 +351,7 @@ export function renderProductDetail(prices, loading, product) {
             deleteProduct(product.hruid).then(() => {
                 navigateToProducts();
             }).catch((err) => {
-                alert("Error deleting product: " + err.message);
+                showToast("Error deleting product: " + err.message, "error");
             });
         });
         actions.appendChild(deleteBtn);
@@ -433,7 +434,7 @@ export function renderProductDetail(prices, loading, product) {
                     deletePrice(product.hruid, p.timestamp).then(() => {
                         renderWorkspace();
                     }).catch((err) => {
-                        alert("Error deleting price: " + err.message);
+                        showToast("Error deleting price: " + err.message, "error");
                     });
                 });
                 delCell.appendChild(delBtn);
@@ -488,7 +489,7 @@ export function renderAddPriceForm(hruid) {
         const timestamp = tsInput.value;
 
         if (isNaN(value) || !timestamp) {
-            alert("Price value and timestamp are required.");
+            showToast("Price value and timestamp are required.", "error");
             return;
         }
 
@@ -496,7 +497,7 @@ export function renderAddPriceForm(hruid) {
             setState({ showAddPriceForm: false });
             renderWorkspace();
         }).catch((err) => {
-            alert("Error adding price: " + err.message);
+            showToast("Error adding price: " + err.message, "error");
         });
     });
     form.appendChild(submitBtn);

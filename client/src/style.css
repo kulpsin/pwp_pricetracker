@@ -728,8 +728,76 @@ main {
 }
 
 /* ============================================================
-   Responsive
-   ============================================================ */
+    Toast Notifications
+    ============================================================ */
+
+.toast-container {
+    position: fixed;
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    pointer-events: none;
+    max-width: 420px;
+}
+
+.toast {
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    box-shadow: 0 4px 16px var(--color-shadow);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.25s, transform 0.25s;
+}
+
+.toast.toast-show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast-info {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-left: 4px solid var(--color-primary);
+}
+
+.toast-success {
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+    border-left: 4px solid var(--color-success);
+}
+
+.toast-error {
+    background: var(--color-danger-bg);
+    color: var(--color-danger-text);
+    border-left: 4px solid var(--color-danger);
+}
+
+.toast-dismiss {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0 0 0 var(--space-sm);
+    line-height: 1;
+    opacity: 0.5;
+    color: inherit;
+}
+
+.toast-dismiss:hover {
+    opacity: 1;
+}
+
+/* ============================================================
+    Responsive
+    ============================================================ */
 
 @media (max-width: 600px) {
     #workspace {

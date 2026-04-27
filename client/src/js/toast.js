@@ -1,0 +1,49 @@
+/**
+ * Toast notification system.
+ * Toasts auto-dismiss after a configurable timeout.
+ */
+
+const TOAST_DURATION = 4000;
+const TOAST_GAP = 12;
+
+/**
+ * Show a toast notification.
+ * @param {string} message - The message to display.
+ * @param {"info"|"success"|"error"} type - Visual style variant.
+ */
+export function showToast(message, type = "info") {
+    let container = document.getElementById("toast-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toast-container";
+        container.className = "toast-container";
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+
+    const dismissBtn = document.createElement("button");
+    dismissBtn.className = "toast-dismiss";
+    dismissBtn.textContent = "\u00d7";
+    dismissBtn.setAttribute("aria-label", "Dismiss");
+    dismissBtn.addEventListener("click", () => dismissToast(toast));
+    toast.appendChild(dismissBtn);
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.add("toast-show");
+    });
+
+    const timer = setTimeout(() => dismissToast(toast), TOAST_DURATION);
+    toast._timer = timer;
+}
+
+function dismissToast(toast) {
+    clearTimeout(toast._timer);
+    toast.classList.remove("toast-show");
+    toast.addEventListener("transitionend", () => toast.remove(), { once: true });
+    setTimeout(() => toast.remove(), 300);
+}

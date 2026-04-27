@@ -3,6 +3,7 @@ import { BASE } from "./config.js";
 import { clearStateFromStorage } from "./state.js";
 import { navigateToProducts } from "./navigation.js";
 import { lookupUserByEmail } from "./api.js";
+import { showToast } from "./toast.js";
 
 /** @type {string|null} The current user's API key. */
 let apiKey = localStorage.getItem("apiKey") || null;
@@ -100,7 +101,15 @@ export function setLoading(buttonId, loading) {
     const btn = document.getElementById(buttonId);
     if (!btn) { return; }
     btn.disabled = loading;
-    btn.textContent = loading ? "Loading..." : btn.textContent;
+    if (loading) {
+        btn.textContent = "Loading...";
+    } else if (btn.textContent === "Loading...") {
+        if (buttonId === "auth-submit-key") {
+            btn.textContent = "Continue";
+        } else if (buttonId === "auth-create-user") {
+            btn.textContent = "Create & Continue";
+        }
+    }
 }
 
 /**
@@ -113,11 +122,11 @@ export async function handleExistingKey() {
     const keyInput = document.getElementById("api-key-input");
     const key = keyInput.value.trim();
     if (!email) {
-        alert("Please enter your email address.");
+        showToast("Please enter your email address.", "error");
         return;
     }
     if (!key) {
-        alert("Please enter an API key.");
+        showToast("Please enter an API key.", "error");
         return;
     }
     setLoading("auth-submit-key", true);
@@ -129,13 +138,20 @@ export async function handleExistingKey() {
             hideAuthOverlay();
             navigateToProducts();
         } else {
-            alert("No user found with that email, or invalid API key.");
+            showToast("No user found with that email, or invalid API key.", "error");
             setApiKey(null);
             setUserUuid(null);
             clearStateFromStorage();
         }
     } catch (e) {
-        alert("Error authenticating: " + e.message);
+        const msg = e.message || "";
+        if (msg.includes("HTTP 403")) {
+            showToast("Invalid API key or insufficient permissions.", "error");
+        } else if (msg.includes("HTTP 401")) {
+            showToast("Authentication failed. Check your email and API key.", "error");
+        } else {
+            showToast("Error authenticating: " + msg, "error");
+        }
         setApiKey(null);
         setUserUuid(null);
         clearStateFromStorage();
@@ -153,7 +169,7 @@ export async function handleCreateUser() {
     const emailInput = document.getElementById("create-email");
     const email = emailInput.value.trim();
     if (!email) {
-        alert("Please enter an email address.");
+        showToast("Please enter an email address.", "error");
         return;
     }
 
@@ -163,11 +179,11 @@ export async function handleCreateUser() {
         if (result && result.apiKey) {
             showCredentialsModal();
         } else {
-            alert("User created but no API key received. Check console.");
+            showToast("User created but no API key received. Check console.", "error");
             console.error("No X-Api-Key header in response", result);
         }
     } catch (e) {
-        alert("Error creating user: " + e.message);
+        showToast("Error creating user: " + e.message, "error");
         console.error(e);
     } finally {
         setLoading("auth-create-user", false);
@@ -281,7 +297,7 @@ export async function copyCredentialField(inputId) {
             setTimeout(() => { btn.textContent = originalText; }, 1500);
         }
     } catch {
-        alert("Failed to copy to clipboard.");
+        showToast("Failed to copy to clipboard.", "error");
     }
 }
 
@@ -303,7 +319,7 @@ export async function copyCredentials() {
             setTimeout(() => { feedback.style.display = "none"; }, 2000);
         }
     } catch {
-        alert("Failed to copy to clipboard.");
+        showToast("Failed to copy to clipboard.", "error");
     }
 }
 

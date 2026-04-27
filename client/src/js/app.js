@@ -1,4 +1,5 @@
 import { isAuthenticated, renderAuthUI, hideAuthOverlay, handleExistingKey, handleCreateUser, handleAnonymous, hideCredentialsModal, copyCredentialField, dismissCredentialsModal, toggleApiKeyVisibility } from "./auth.js";
+import { showToast } from "./toast.js";
 import { navigateToProducts } from "./navigation.js";
 import { loadStateFromStorage } from "./state.js";
 import { renderSidebar } from "./sidebar.js";
