@@ -211,6 +211,13 @@ def generate_user_uuid(mapper, connection, target):  # pylint: disable=W0613 (un
         target.uuid = uuid.uuid4()
 
 
+@event.listens_for(User, "load", propagate=True)
+def load_user_uuid(instance, context):  # pylint: disable=W0613 (unused-argument)
+    """Fill in NULL uuid for users loaded from DB without one."""
+    if instance.uuid is None:
+        instance.uuid = uuid.uuid4()
+
+
 class PriceUpdateJob(db.Model):
     """Price update queue job model"""
     __table_args__ = (
