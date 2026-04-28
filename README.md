@@ -29,6 +29,9 @@ All the required dependencies will be installed when installing the main package
 
 # Environment setup
 
+This will guide the installation of API service. For client installation instructions, see
+[`client/README.md`](client/README.md).
+
 ## Local installation
 
 Running these commands will install the environment in development mode
@@ -66,13 +69,13 @@ git clone git@github.com:kulpsin/pwp_pricetracker.git
 cd pwp_pricetracker
 
 # Build the docker image
-docker compose build
+docker compose build app
 
 # Set the port you want to serve the app from
-echo "APP_PORT=8000" > .env
+echo "APP_PORT=8000" >> .env
 
 # Start the docker container in detached mode
-docker compose up -d
+docker compose up -d app
 
 # Test that you can send requests to the server
 curl 'http://127.0.0.1:8000/hello'
