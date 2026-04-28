@@ -16,7 +16,7 @@ echo 'API_BASE_URL="https://api.example.net"' >> .env
 docker compose build client
 
 # Set the port you want to serve the client from
-echo "APP_PORT=8001" >> .env
+echo "CLIENT_PORT=8001" >> .env
 
 # Start the docker container in detached mode
 docker compose up -d client
