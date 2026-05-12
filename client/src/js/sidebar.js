@@ -34,7 +34,6 @@ export function renderSidebar() {
     nav.appendChild(myBtn);
 
     const { productListView } = getState();
-    const activeLink = nav.querySelector(".sidebar-link");
     const allLink = nav.children[0];
     const myLink = nav.children[1];
 

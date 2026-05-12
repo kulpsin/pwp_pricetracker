@@ -6,7 +6,6 @@
  */
 
 const TOAST_DURATION = 4000;
-const TOAST_GAP = 12;
 
 /**
  * Show a toast notification.

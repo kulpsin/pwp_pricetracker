@@ -3,7 +3,7 @@
 
 import { isAuthenticated, getUserUuid, showCredentialsModal } from "./auth.js";
 import { getState, productListView, setState } from "./state.js";
-import { navigateToProducts, navigateToProduct, navigateToView } from "./navigation.js";
+import { navigateToProducts, navigateToProduct } from "./navigation.js";
 import { listUserProducts, listProducts, getProduct, createProduct, deleteProduct, createPrice, deletePrice, listPrices, enqueuePriceUpdate } from "./api.js";
 import { formatPrice, formatTimestamp, truncateUrl, getTrendArrow, getTrendColor, getLatestPrice } from "./utils.js";
 import { renderPriceChart } from "./graph.js";
